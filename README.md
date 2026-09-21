@@ -19,13 +19,13 @@
 
 ### 1. কোর স্ট্র্যাটেজি ও আর্কিটেকচার
 * 📌 [COMPARISON.md](COMPARISON.md) — **Frozen** competitor prices, ratings, Shopify surfaces (Sept 2026). Conflicts → this file wins.
-* [ALGORITHM_AND_LLM_COST.md](ALGORITHM_AND_LLM_COST.md) — ওয়াটারফল কীভাবে চলে, LLM কোথায় বসবে, খরচ (Sept 2026 prices).
+* [ALGORITHM_AND_LLM_COST.md](ALGORITHM_AND_LLM_COST.md) — ওয়াটারফল, LLM, খরচ; **§8 B-রিভিউ স্কিমা/প্রক্সি/অ্যাট্রিবিউশন**।
 * [MASTER_ARCHITECTURE_AND_ROADMAP.md](MASTER_ARCHITECTURE_AND_ROADMAP.md)  
   টেকনিক্যাল ব্লুপ্রিন্ট (Workers + D1, waterfall, extensions). ইমপ্লিমেন্টেশন হাইপোথিসিস।
 * [PROJECT_STRATEGY_AND_DATA_ANALYSIS.md](PROJECT_STRATEGY_AND_DATA_ANALYSIS.md)  
   পজিশনিং ও লাইভ-ভেরিফায়েড গ্যাপ (unsourced TAM/ARR কাটা)।
 * [ENGINEERING_STANDARDS_AND_PATTERNS.md](ENGINEERING_STANDARDS_AND_PATTERNS.md)  
-  কোডিং প্যাটার্ন; `<5KB` / `<15ms` টার্গেট, মাপা নয়।
+  কোডিং প্যাটার্ন; FBT gzip <5KB **per widget**; webhook p99 <500ms (SLO নয়)।
 * [ENAMUL_SUGGEST_SHOPIFY_PRODUCT_RECOMMENDATIONS_COMPETITIVE_STRATEGY.md](ENAMUL_SUGGEST_SHOPIFY_PRODUCT_RECOMMENDATIONS_COMPETITIVE_STRATEGY.md)  
   অরিজিনাল প্রোডাক্ট-লিড মেমো। COMPARISON-এর সাথে কনফ্লিক্ট হলে COMPARISON জিতবে।
 
@@ -44,10 +44,11 @@
 │                 Shopify AI Recommendations Tech Stack                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  [Merchant Admin]     React Router v7 + Shopify Polaris + App Bridge v4     │
-│  [Edge Engine]        Cloudflare Workers (Sub-15ms Latency, Zero Cold Start)│
-│  [Edge Relational DB] Cloudflare D1 (SQLite Engine, 9 Domain Schemas)       │
-│  [Storefront Widgets] Liquid + Native Custom Elements (< 5KB, 0 Dependencies)│
-│  [Checkout & Upsell]  @shopify/ui-extensions (Purchase Bump & 120s Post-Buy)│
+│  [Edge Engine]        Cloudflare Workers (App Proxy p99 < 500ms; not $0)    │
+│  [Edge Relational DB] Cloudflare D1 (stats + inventory_item map + attribution)│
+│  [Storefront Widgets] Liquid metafield recs; FBT gzip < 5KB per widget      │
+│  [Discounts]          Shopify Discount Function (bundle %)                  │
+│  [Checkout & Upsell]  Post-purchase optional; checkout offers Plus-gated    │
 │  [Web Pixel]          Web Pixels API (Zero-Lag Sandbox Ingestion)           │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -69,10 +70,10 @@
 
 | প্ল্যান | মাসিক ফি | ক্যাপ ও ফিচারসমূহ |
 |:---|:---|:---|
-| **Free Tier** | **$০ / মাস** | প্রতি মাসে $৫০০ অ্যাপ সেলস পর্যন্ত সম্পূর্ণ ফ্রি • FBT উইজেট • ৪-টিয়ার ওয়াটারফল |
-| **Starter** | **$১৯ / মাস** | $২,০০০ সেলস ক্যাপ • FBT বান্ডেল • স্মার্ট কার্ট ড্রয়ার ও প্রগ্রেস বার |
-| **Growth (Sweet Spot)** | **$৪৯ / মাস** | $৭,৫০০ সেলস ক্যাপ • চেকআউট এক্সটেনশন • ১২০s পোস্ট-পারচেজ • সোশ্যাল প্রুফ ব্যাজ |
-| **Pro / Scale** | **$৯৯ / মাস** | আনলিমিটেড সেলস • ইন-উইজেট A/B টেস্টিং • VisualAI • প্রায়োরিটি সাপোর্ট |
+| **Free Tier** | **$০ / মাস** | $৫০০ **অ্যাট্রিবিউটেড** সেলস • FBT • ওয়াটারফল • ক্যাপে উইজেট অফ নয় |
+| **Starter** | **$১৯ / মাস** | $২,০০০ অ্যাট্রিবিউটেড • FBT বান্ডেল • Discount Function |
+| **Growth** | **$৪৯ / মাস** | $৭,৫০০ অ্যাট্রিবিউটেড • explainer ব্যাজ • পোস্ট-পারচেজ অপশনাল (Plus চেকআউট নয়) |
+| **Pro / Scale** | **$৯৯ / মাস** | GMV ক্যাপ নেই • A/B / VisualAI হাইপোথিসিস |
 
 ---
 

@@ -124,11 +124,11 @@ SMB ব্যান্ড ইতিমধ্যে ভরা — খালি �
 | স্তর | প্রযুক্তি | ভূমিকা |
 | :--- | :--- | :--- |
 | **Merchant Dashboard**| React Router v7 + Polaris + App Bridge v4 | নেটিভ শপিফাই অ্যাডমিন এক্সপেরিয়েন্স ও আধুনিক কন্ট্রোলার-ভিউ আর্কিটেকচার। |
-| **Edge Server & Runtime**| Cloudflare Workers (`workers/app.js`) | < ৩০ms গ্লোবাল ল্যাটেন্সি, জিরো কোল্ড স্টার্ট এবং জিরো ক্লাউড সার্ভার খরচ। |
-| **Edge Database** | Cloudflare D1 (`migrations/*.sql`) | সার্ভারলেস এজ এসকিউএল ডেটাবেস (`Session`, `WebhookDeliveries`, `CoPurchaseMatrix`, `Subscriptions`)। |
-| **Checkout Extensions** | `@shopify/ui-extensions` | চেকআউট ব্লক + আলাদা post-purchase 1-click। থ্যাংক-ইউ ব্লক অর্ডার মিউটেট করে না। |
-| **Storefront Widgets** | Liquid + Native Custom Elements (Web Components)| কোনো এক্সটারনাল লাইব্রেরি ছাড়া < ৫KB-তে আল্ট্রা-ফাস্ট PDP FBT ও স্লাইড কার্ট ড্রয়ার। |
-| **Webhook Engine** | Fast-ACK Ingestion (< ২৫ms) | `claimWebhookDelivery` দিয়ে `X-Shopify-Webhook-Id` ডিডুপ্লিকেশন ও জিরো-স্টক ইনস্ট্যান্ট শিল্ড। |
+| **Edge Server & Runtime**| Cloudflare Workers (`workers/app.js`) | Recs metafield / App Proxy p99 < 500ms। Workers Paid $0 নয়। |
+| **Edge Database** | Cloudflare D1 (`migrations/*.sql`) | `CoPurchaseMatrix` + `ProductOrderStats` + `InventoryItemMap` + `AttributedLineItems`। |
+| **Checkout Extensions** | `@shopify/ui-extensions` + Discount Function | Function = বান্ডেল ছাড়। চেকআউট অফার Plus-গেটেড। |
+| **Storefront Widgets** | Liquid + Custom Elements | **Per-widget** gzip; FBT < 5KB। পাবলিক recs GET নয়। |
+| **Webhook Engine** | Queue Fast-ACK, p99 < 500ms | Hygiene + GDPR Phase 2। `inventory_item_id` ম্যাপ। |
 | **Styling & Design System**| Sass / SCSS (BEM & Tokens) | `_tokens.scss` ও `_base.scss` ভিত্তিক ক্লিন ও প্রিমিয়াম সিএসএস। |
 
 ---
@@ -137,10 +137,10 @@ SMB ব্যান্ড ইতিমধ্যে ভরা — খালি �
 
 মার্কেট লিডারদের রেভিনিউ কাটার ট্র্যাপ এবং উচ্চ মূল্যের বাধা ভেঙে আমাদের স্বচ্ছ প্রাইসিং:
 
-* **Free Tier ($0/মাস):** প্রতি মাসে $৫০০ পর্যন্ত অ্যাপ-ড্রাইভেন সেলসের জন্য সম্পূর্ণ ফ্রি (মার্চেন্ট অনবোর্ডিং ত্বরান্বিত করতে)।
-* **Starter ($১৯/মাস):** $২,০০০ পর্যন্ত সেলস + FBT বান্ডেল + স্লাইড কার্ট ড্রয়ার ও প্রগ্রেস বার।
-* **Growth ($৪৯/মাস — Sweet Spot):** $৭,৫০০ পর্যন্ত সেলস + চেকআউট এক্সটেনশন + পোস্ট-পারচেজ আপসেল + Explainable AI ব্যাজ।
-* **Scale ($৯৯/মাস):** আনলিমিটেড সেলস (ফেয়ার ক্যাপড, কোনো অতিরিক্ত গোপন চার্জ নেই) + A/B টেস্টিং + VisualAI।
+* **Free Tier ($0/মাস):** $৫০০ **অ্যাট্রিবিউটেড** সেলস (`_cr_src` লাইন)। ক্যাপ ছাড়ালে উইজেট বন্ধ নয়।
+* **Starter ($১৯/মাস):** $২,০০০ অ্যাট্রিবিউটেড + FBT + Discount Function। কার্ট ড্রয়ার পরে।
+* **Growth ($৪৯/মাস):** $৭,৫০০ অ্যাট্রিবিউটেড + explainer ব্যাজ। চেকআউট প্রোডাক্ট অফার Plus — SMB হেডলাইন নয়। পোস্ট-পারচেজ অপশনাল (এক স্লট)।
+* **Scale ($৯৯/মাস):** **GMV ক্যাপ নেই।** A/B + VisualAI হাইপোথিসিস। “Fair capped unlimited” বলা যাবে না।
 
 ---
 

@@ -14,7 +14,7 @@
 | Wiser | Wiser - Upsell & Cross Sell | [competitors/WISER.md](competitors/WISER.md) | Listing + demo storefront only (admin waterfall not torn down) |
 | Nosto | Nosto \| AI Search & Discovery | [competitors/NOSTO.md](competitors/NOSTO.md) | Live `my.nosto.com` |
 
-Not in this pack (named by LimeSpot chat as a migration target): **Rebuy**. Shopify’s free native recs (**Search & Discovery**) also not torn down.
+Not in this pack (named by LimeSpot chat as a migration target): **Rebuy**. Shopify’s free native recs (**Search & Discovery**) also not torn down. Post-purchase **incumbents not torn down:** ReConvert, AfterSell, Zipify — they occupy the single post-purchase app slot.
 
 ---
 
@@ -46,12 +46,14 @@ Discarded numbers (do not reuse in STRATEGY/MASTER): LimeSpot “$500–$1,200/m
 
 | Decision | Frozen value | Notes |
 | :--- | :--- | :--- |
-| Our price hypothesis | **$0 / $19 / $49 / $99** (sales-capped) | Positioned at Wiser’s band, not LimeSpot Max / Nosto |
+| Our price hypothesis | **$0 / $19 / $49 / $99** | GMV caps on Free/Starter/Growth are **attributed** line items (`_cr_src`), not all store sales. Scale = **no GMV cap** (do not say “unlimited fair capped”). Cap hit → upgrade request, widget stays on |
 | FBT benchmark to beat | **CBB**, not Julius AI | Copy waterfall + inline variants + 5-stage funnel |
-| Cart drawer | Wiser-inspired, later | Theme-conflict risk documented by LimeSpot |
-| 1-click 120s upsell | **Post-purchase extension**, not thank-you page | LimeSpot constraints apply |
-| Explainer badges | Storefront USP | None of the four show “73% bought this” on the widget |
-| Zero-stock shield | Real LimeSpot gap | CBB already has exclusion lists; we still need webhook hide |
+| Cart drawer | Wiser-inspired, **later** | Separate gzip budget; not in the FBT 5KB envelope |
+| Checkout product offers | Plus-gated | **Not** the $49 Growth headline for SMB |
+| 1-click 120s upsell | Post-purchase extension | One app slot; ReConvert/AfterSell/Zipify incumbents — optional, not default Growth |
+| Explainer badges | Storefront USP | Percent only if pair≥5 **and** orders(A)≥20; product-level, not variant |
+| Zero-stock shield | Render-time + inventory_item map | Webhook payload has no product_id; CONTINUE/untracked must not hide |
+| Recs transport | Product metafield or App Proxy | Public `GET /api/recs?shop=` forbidden |
 | A/B testing | Not unique | LimeSpot Max + Nosto already sell it |
 | VisualAI | Nosto has it; Scale-tier hypothesis only | Not a researched v1 differentiator |
 

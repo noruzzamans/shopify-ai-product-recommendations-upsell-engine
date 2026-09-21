@@ -24,19 +24,21 @@ LimeSpot boxes (Bought Together, Related, Most Popular, You May Like) are the sa
 Match CBB, with a **complement map** instead of same-leaf category / random-collection as last resort.
 
 ```
-orders/create webhook
+orders/create|cancelled + refunds/create
   → HMAC + claimWebhookDelivery (D1, 1 row)
-  → Queue.send(order line-items)     // durable; NOT ctx.waitUntil-only
-  → HTTP 200 Fast-ACK
+  → hygiene filter (skip test / unpaid / cancelled / _cr_src lines)
+  → Queue.send(order line-items)
+  → HTTP 200 (target p99 < 500ms; Shopify limit 5s)
 
-queue consumer (batch 10, timeout ~5s)
-  → D1.batch() upsert CoPurchaseMatrix pairs
-  → recompute top-K for touched product_ids
-  → write RecCache (KV): shop + product_id → { items[], badges[], source, stock }
-
-PDP widget GET /api/recs?shop=&product_id=
-  → KV lookup (miss: D1 waterfall, then fill KV)
+queue consumer
+  → upsert pair_count + ProductOrderStats.order_count + ShopOrderStats
+  → confidence is NOT stored: pair_count / ProductOrderStats[A]
+  → write $app.recs_top3 product metafield (+ KV RecCache optional)
   → never call an LLM
+
+PDP widget
+  → Liquid reads metafield (zero extra RTT). Unpublished skipped.
+  → optional App Proxy stock ping (signed). Public GET /api/recs?shop= forbidden.
 ```
 
 `ctx.waitUntil` after ACK is **not** a queue: Shopify already got 200, so a crashed isolate drops the order with no retry. Queues (or a D1 `OrderIngest` row written **before** ACK + cron sweeper) is the durability layer. BFCM lock contention is a later scale problem; silent loss on Fast-ACK is a v1 problem.
@@ -46,7 +48,7 @@ PDP widget GET /api/recs?shop=&product_id=
 | Tier | Name | Logic | When it fires |
 | :--- | :--- | :--- | :--- |
 | 1 | Manual | `RecommendationRules` for this `base_product_id`. Also ingest Search & Discovery `shopify--discovery--product_recommendation.complementary_products` if the merchant already curated them. | Merchant / native Shopify complementary always wins |
-| 2 | Co-purchase | Top `confidence_score` from `CoPurchaseMatrix`, join `InventoryShield` | **Serve** if `pair_count >= 1` (beta: 2 if noisy). **Percent badge** only if `pair_count >= 5` |
+| 2 | Co-purchase | `confidence = pair_count / ProductOrderStats.order_count` (derived, not a stored column). Render-time stock: hide iff tracked + DENY + available≤0 | **Serve** if `pair_count >= 1`. **Percent badge** only if `pair_count >= 5` **and** `orders(A) >= 20` |
 | 3 | Complement map | Static vertical JSON: source taxonomy GID → complementary GIDs (phone case → protector/charger, not another case). Then `ProductCatalog` in those target categories, in-stock, not self. | Cold start / new SKU. **Never same-leaf category** |
 | 4 | Bestseller | `ProductCatalog.sales_count` in-stock | Last fill so the widget is never empty |
 
@@ -60,20 +62,23 @@ Widget copy must match the tier that filled the slot: “Frequently bought toget
 
 For product A recommending B:
 
-* `pair_count(A,B)` = orders containing both  
-* `confidence(A→B) = pair_count(A,B) / orders_containing(A)`  
-* `lift(A→B) = confidence(A→B) / P(B)`  
+* `pair_count(A,B)` = **hygienic** paid orders containing both (not test, not cancelled, not refunded, lines without `_cr_src`)  
+* `orders_containing(A)` from `ProductOrderStats` — **required table**; without it stored confidence goes stale when A sells again  
+* `confidence(A→B) = pair_count(A,B) / orders_containing(A)`  (compute at rank time)  
+* `lift(A→B) = confidence(A→B) / (orders_containing(B) / ShopOrderStats.order_count)`  
 * Rank by `confidence`, break ties with `lift` then `pair_count`  
-* Optional filters: rec price between **0.2× and 3×** of A; same vendor optional; exclude `gift_card`
+* Optional recency decay at rank time only: `pair_count * exp(-λ * days_since last_purchased_at)`  
+* Optional filters: rec price 0.2×–3× of A; exclude `gift_card`; `ProductCatalog.status = ACTIVE`
 
 ### Explainer badge (the USP) — also no LLM
 
 Split two thresholds that were previously conflated:
 
-* **Serve** a co-purchase pair at `pair_count >= 1` (optionally 2). CBB’s own install mined **32 orders → 4 pairings**; those pairs are almost certainly support 1–3. Hiding Tier 2 until 5 is how we manufacture the “generic widget” complaint.  
-* **Print a percent** only at `pair_count >= 5`: `"{{pct}}% of customers who bought this also bought {{title}}"`.  
-* Else if Tier 2 but low support: `"Often bought together"` (no invented percent).  
-* Tier 3: `"Goes with this"` / a phrase from the static map — **not** an LLM sentence about fabric tone.  
+* **Serve** a co-purchase pair at `pair_count >= 1` (optionally 2).  
+* **Print a percent** only if `pair_count >= 5` **and** `orders(A) >= 20`. Six orders of A with five pairs = 83% is a lie; `pair_count >= 5` alone is not enough.  
+* Matrix is **product-level**, not variant. Never print “87% bought this size.”  
+* Else if Tier 2 but weak support: `"Often bought together"` or **count** `"12 customers also bought"` — no invented percent.  
+* Tier 3: `"Goes with this"` from the static map.  
 * Else hide the badge.
 
 That is the LimeSpot/CBB gap: they have the stats in admin; they do not print them on the storefront. LLM prose badges are the same App Store risk as fake percents.
@@ -141,7 +146,7 @@ Token assumptions for an online “ask the model to pick 3 products” call: **~
 
 | Path | What runs on the PDP request | Est. LLM/embed $ | Latency | Fit on $19 plan? |
 | :--- | :--- | ---: | :--- | :--- |
-| **A. Waterfall + KV cache** | KV get | **~$0** | &lt;50 ms cached | Yes — this is v1 |
+| **A. Metafield + complement map** | Liquid metafield (0 extra RTT) | **~$0** LLM | metafield = 0 RTT; App Proxy p99 < 500ms | Yes — this is v1 |
 | **B. Offline LLM enrich** (2k SKUs / mo) | Still KV get; LLM only on product webhooks | **~$0.30** (mini, 400 in / 150 out × 2k) | PDP unchanged | Yes |
 | **C. Embeddings / Vectorize** | Do **not** put on the FBT widget (nearest-neighbor ≈ substitute). Optional later for a separate “Similar items” row; Shopify `intent: RELATED` already does this for free | **&lt;$0.02** if we ever run it | +20–80 ms | **Not v1** |
 | **D. Llama 3.2 3B every view** | LLM ranks live | **~$3.21** | 300–800 ms | Tight vs $19 after other costs |
@@ -174,15 +179,38 @@ Token assumptions for an online “ask the model to pick 3 products” call: **~
 4. **Never block PDP render on an LLM.** Timeout = empty widget = bounce.  
 5. **Durable Fast-ACK:** Queue.send (or D1 ingest row before 200) in Phase 2. Do not increment 10–45 pairs inside the webhook request. Do not sell 10–30s “micro-batch architecture” as a v1 epic.  
 6. **VisualAI / gpt-5 ranking / Vectorize = Scale hypothesis**, not the $0–$19 wedge.  
-7. Explainer percents **must** be computed from `CoPurchaseMatrix` at `pair_count >= 5`. LLM sentences are not a substitute USP.
+7. Explainer percents **must** use `pair_count >= 5` **and** `orders(A) >= 20`. Else show a count. Product-level only.  
+8. **Discount Function** is in the v1 FBT path (not “automatic discount” REST). Attribution = line-item `_cr_src` → `AttributedLineItems`; cap never silently kills the widget.  
+9. Recs delivery = metafield or signed App Proxy. Public `GET /api/recs?shop=` is out.
 
 ---
 
 ## 6. Open items (not claimed as fact)
 
-* Exact `serve_min_support` (1 vs 2) and `badge_min_support` (5) per vertical — tune after ~50 beta stores.  
-* How complete merchant-assigned Shopify taxonomy GIDs are on $0/$19 stores (if uncategorized, complement map misses; fallback = Global pin + bestseller, still not same-title clones).  
-* Image-embedding cost for VisualAI (Workers AI ResNet is priced per million images — not modeled here).
+* Exact `serve_min_support` (1 vs 2) per vertical — tune after ~50 beta stores. `badge_min_support` frozen at pair≥5 **and** orders(A)≥20 until then.  
+* How complete merchant-assigned Shopify taxonomy GIDs are on $0/$19 stores.  
+* Image-embedding cost for VisualAI (not modeled).  
+* Post-purchase slot vs ReConvert/AfterSell/Zipify — not torn down; do not sell as default Growth headline.
+
+---
+
+## 8. Architecture gaps freeze (Claude review B, Sept 2026)
+
+Accepted into MASTER v1.3. This file + [COMPARISON.md](COMPARISON.md) win on conflict.
+
+| Gap | v1 spec |
+| :--- | :--- |
+| Discount Function missing | `cart.lines.discounts.generate.run`; scope `write_discounts`. Phase 6. Not Automatic Discount REST. |
+| Schema cannot compute confidence | `ProductOrderStats` + `ShopOrderStats`; derive confidence/lift at rank time. Decay at rank time only. |
+| Order hygiene | Skip test / unpaid / cancelled / refunded; skip lines with `_cr_src` (no self-feedback). Decrement on cancel/refund. |
+| Inventory payload | `InventoryItemMap` + `LocationInventory`. Webhook invalidates cache. Render-time hide only if tracked+DENY+qty≤0. Drop `InventoryShield`. |
+| Attribution / billing | `_cr_src` on cart add → `AttributedLineItems`. Cap = that sum. At 100%: upgrade request, widget stays on. Scale = no GMV cap. |
+| Growth $49 checkout | Plus-gated; not SMB headline. Post-purchase is one-app slot; incumbents unnamed in competitor pack. |
+| Public recs GET | Forbidden. Metafield first; App Proxy signed. Filter unpublished. |
+| Latency copy | Not worldwide sub-15ms / $0 infra. Webhook p99 < 500ms ACK. |
+| Badge % | pair≥5 **and** orders(A)≥20; never variant-size claims. |
+| Token / GDPR / pixel | AES-GCM session token. Mandatory GDPR webhooks in Phase 2. Analytics `session_id` TTL 90d. Protected customer data for orders. |
+| 5KB | Per-widget gzip. FBT <5KB. Drawer is a separate later budget. |
 
 ---
 

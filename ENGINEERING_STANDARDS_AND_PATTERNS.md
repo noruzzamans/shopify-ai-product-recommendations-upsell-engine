@@ -30,7 +30,8 @@ In professional software engineering, our architecture is divided into four dist
   - **Presentation Layer (`*View.jsx`):** Renders Shopify Polaris UI, handles user interaction, formats badges.
   - **Database Layer (`app/db/*.js`):** Interacts with Cloudflare D1 edge database (`sessions.js`, `webhooks.js`, `analytics.js`).
   - **Engine Services (`app/services/*`):** Executes 4-tier waterfall recommendation logic, co-purchase scoring, and zero-stock webhook events.
-  - **Storefront Client Engine (`extensions/theme-extension/assets/*`):** Native Liquid + Vanilla JS Custom Elements (< 5KB, 0 dependencies).
+  - **Storefront Client Engine (`extensions/theme-extension/assets/*`):** Native Liquid + Vanilla JS Custom Elements. Gzip budget is **per widget** (FBT < 5KB; drawer separate). Recs from `$app` metafield or signed App Proxy — never public `GET /api/recs?shop=`.
+  - **Discount Function (`extensions/discount-function/`):** `cart.lines.discounts.generate.run` for FBT bundle %.
   - **Checkout Extensions (`extensions/checkout-upsell/src/*`):** Built with `@shopify/ui-extensions` and `root.createComponent` (Native UI Extension pattern).
 
 ### 3. Single Responsibility Principle (SRP — from SOLID)
@@ -50,13 +51,15 @@ In professional software engineering, our architecture is divided into four dist
 - **Concept:** An operation can be executed multiple times without changing the result beyond the initial execution.
 - **In Our App:**
   - **Webhook Deduplication & Idempotency Pattern:** Shopify retries webhooks on network drops. We record the `X-Shopify-Webhook-Id` header in Cloudflare D1 `WebhookDeliveries` table (`claimWebhookDelivery`). Repeated webhooks return HTTP 200 immediately without re-calculating co-purchase graphs or duplicating analytics logs.
-  - **In-Place Inventory Update:** Syncing inventory levels multiple times updates the existing product's `is_available` flag idempotently.
+  - **Sessions:** `access_token_enc` AES-GCM. Never store a plaintext Admin token in D1.
+  - **In-Place Inventory Update:** `inventory_levels/update` keys off `inventory_item_id` → `InventoryItemMap`. Invalidate cache; hide at render time only if `tracked && policy=DENY && available<=0`.
 
-### 6. Fast-ACK & Asynchronous Offload Pattern (<25ms Webhooks)
-- **Concept:** Acknowledging webhook requests within milliseconds while offloading heavy AI/ML calculations to background execution contexts.
+### 6. Fast-ACK & Asynchronous Offload Pattern (webhook p99 < 500ms)
+- **Concept:** Acknowledging webhook requests quickly while offloading pair math to a durable queue.
 - **In Our App:**
-  - Shopify requires webhooks to return HTTP 200 within 5 seconds or risks endpoint throttling.
-  - When `orders/create` or `inventory_levels/update` fires, the Worker verifies HMAC, `claimWebhookDelivery` in D1, **enqueues** the payload (Cloudflare Queues), and returns HTTP 200 in **<25ms**. Pair increments run in the queue consumer via `db.batch()`. `ctx.waitUntil` alone is not durable: after 200, Shopify will not retry a crashed isolate.
+  - Shopify requires HTTP 200 within **5 seconds**. Target **p99 < 500ms**, not a worldwide sub-15ms SLO and not “<25ms or fail.”
+  - Worker verifies HMAC, claims delivery, **enqueues**, returns 200. `ctx.waitUntil` alone is not durable.
+  - GDPR topics (`customers/data_request`, `customers/redact`, `shop/redact`) ship in the same Phase 2 webhook surface — not Phase 12.
 
 ### 7. Cognitive Load Minimization (Information Architecture)
 - **Concept:** Software interfaces should minimize the mental effort required for merchants to understand and configure settings.
@@ -130,7 +133,7 @@ Before adding a new feature or refactoring code in any of the 12 Micro-Phases, r
 | **2** | **Reuse** | Is this used in 1 place or 3+ places? | If 1 place: Keep it local. If 3+ places: Promote to `@components` or `@utils`. |
 | **3** | **Cleanliness** | Are there duplicate helpers, dead imports, or zombie code? | Run `npx tsc --noEmit` and delete all unreachable code. Follow YAGNI. |
 | **4** | **UX & Fidelity** | Is data immediately formatted for the merchant? | Format in store currency and timezone, zero UI clipping, mobile-responsive. |
-| **5** | **Performance** | Will this slow down storefront or edge execution? | **Targets (not measured in this research pack):** storefront JS budget < 5KB *per widget*; serve rec JSON from cache. D1 SQL-time at the primary can be low-ms; it is not a global sub-15ms SLO. |
+| **5** | **Performance** | Will this slow down storefront or edge execution? | **Targets:** FBT widget gzip < 5KB *measured per file*; recs from metafield (0 extra RTT) or App Proxy p99 < 500ms. D1 SQL-time is not a global sub-15ms SLO. Infra cost is Workers Paid, not $0. |
 | **6** | **Integrity** | Did I break any existing functionality? | Run automated unit tests and `npm run build` before deploying or pushing. |
 
 ---
