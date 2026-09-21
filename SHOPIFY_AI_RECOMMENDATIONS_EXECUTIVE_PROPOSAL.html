@@ -824,35 +824,35 @@
       <div class="header-badge">Cloudflare Edge + D1 + Metafields</div>
     </div>
 
-    <h2 class="section-title"><span class="section-number">৪</span> হাই-পারফরম্যান্স এজ ও রিপোজিটরি আর্কিটেকচার (GitHub Integration)</h2>
+    <h2 class="section-title"><span class="section-number">৪</span> পার্ট ৩: প্রযুক্তিগত আর্কিটেকচার ও রিকমেন্ডেশন অ্যালগরিদম</h2>
 
     <p>
-      মার্চেন্টের পেজ স্পিড যেন বিন্দুমাত্র না কমে এবং আমাদের সার্ভার খরচ যেন শূন্যের কাছাকাছি থাকে, সেজন্য ৩টি পরিষ্কার স্তরে আর্কিটেকচার গঠিত:
+      <strong>সাব-৫০ মিলি সেকেন্ড লেটেন্সি</strong> বজায় রেখে গভীর পারসোনালাইজেশন নিশ্চিত করতে সিস্টেমটিতে একটি <strong>৩-স্তর বিশিষ্ট হাইব্রিড আর্কিটেকচার</strong> ব্যবহার করা হয়েছে:
     </p>
 
-    <!-- 3 Clean Layers -->
+    <!-- 3 Clean Layers (Exact Part 3 from Enamul Blueprint) -->
     <div class="layer-card blue">
       <div>
-        <div class="layer-title">১. স্টোরফ্রন্ট লেয়ার (Theme App Extension & Liquid SDK)</div>
-        <div class="layer-desc"><code>&lt;clearrecs-fbt&gt;</code> ভ্যানিলা কাস্টম এলিমেন্ট (< ৫KB)। প্রোডাক্ট মেটাফিল্ড থেকে ০ms-এ লিকুইড সরাসরি রেন্ডার করে।</div>
+        <div class="layer-title">লেয়ার ১ (রিয়েল-টাইম সেশন ও আচরণ)</div>
+        <div class="layer-desc">রেডিস (Redis) ক্যাশিং এবং ইভেন্ট কিউ-এর মাধ্যমে লাইভ ক্লিক, পেজ ভিউ এবং কার্ট অ্যাড তাৎক্ষণিকভাবে ট্র্যাক করে।</div>
       </div>
-      <span class="pill pill-blue">০ms Network RTT</span>
+      <span class="pill pill-blue">Redis • লাইভ সেশন</span>
     </div>
 
     <div class="layer-card orange">
       <div>
-        <div class="layer-title">২. ব্যাকএন্ড ফ্রেমওয়ার্ক ও কিউ (Next.js / Workers & Redis Queue)</div>
-        <div class="layer-desc">অর্ডার ওয়েব হুক পেয়ে ৫০০ms-এর মধ্যে Fast-ACK পাঠায় এবং কিউতে নিরাপদে জমা রেখে পেয়ার ম্যাট্রিক্স আপডেট করে।</div>
+        <div class="layer-title">লেয়ার ২ (ভেক্টর সিমিলারিটি ও কোলাবোরেটিভ ফিল্টারিং)</div>
+        <div class="layer-desc">PostgreSQL-এর সাথে <code>pgvector</code> অথবা Pinecone এমবেডিং ব্যবহার করে দ্রুত কো-পার্চেজ প্যাটার্ন এবং পণ্যের মিল গণনা করে।</div>
       </div>
-      <span class="pill pill-amber">Fast-ACK &lt; ৫০০ms</span>
+      <span class="pill pill-amber">pgvector • Hybrid ML</span>
     </div>
 
     <div class="layer-card green">
       <div>
-        <div class="layer-title">৩. ডেটাবেস ও ভেক্টর স্টোরেজ (PostgreSQL + pgvector / D1 & Discount Function)</div>
-        <div class="layer-desc">কো-পারচেজ ম্যাট্রিক্স, pgvector সেমান্টিক এমবেডিংস সংরক্ষণ এবং শপিফাই নেটিভ ফাংশন দিয়ে চেকআউট ডিসকাউন্ট প্রসেস।</div>
+        <div class="layer-title">লেয়ার ৩ (এলএলএম ইনটেন্ট ও এক্সপ্লেনাবিলিটি লেয়ার)</div>
+        <div class="layer-desc">পণ্যের মেটাডেটাকে স্বাভাবিক ভাষার ব্যাখ্যায় ("কেন এই সুপারিশ?") রূপান্তর করে এবং ক্রেতাদের জন্য ন্যাচারাল ল্যাঙ্গুয়েজ প্রম্পট সার্চ পরিচালনা করে।</div>
       </div>
-      <span class="pill pill-green">Edge SQL • pgvector</span>
+      <span class="pill pill-green">LLM • Explainable AI</span>
     </div>
 
     <h2 class="section-title" style="margin-top: 18px;"><span class="section-number">৫</span> ৪-টিয়ার জিরো-এম্পটি-স্টেট ওয়াটারফল চেইন</h2>
