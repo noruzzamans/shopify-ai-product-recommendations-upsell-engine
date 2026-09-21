@@ -21,30 +21,40 @@ LimeSpot boxes (Bought Together, Related, Most Popular, You May Like) are the sa
 
 ## 2. How our engine should work (online path)
 
-Match CBB, with taxonomy instead of random-collection as last resort (already in MASTER).
+Match CBB, with a **complement map** instead of same-leaf category / random-collection as last resort.
 
 ```
 orders/create webhook
-  → Fast-ACK
-  → increment CoPurchaseMatrix pairs for every line-item pair in the order
-  → recompute top-K for those product_ids
-  → write RecCache (KV): shop + product_id → { items[], badges[], stock }
+  → HMAC + claimWebhookDelivery (D1, 1 row)
+  → Queue.send(order line-items)     // durable; NOT ctx.waitUntil-only
+  → HTTP 200 Fast-ACK
+
+queue consumer (batch 10, timeout ~5s)
+  → D1.batch() upsert CoPurchaseMatrix pairs
+  → recompute top-K for touched product_ids
+  → write RecCache (KV): shop + product_id → { items[], badges[], source, stock }
 
 PDP widget GET /api/recs?shop=&product_id=
   → KV lookup (miss: D1 waterfall, then fill KV)
   → never call an LLM
 ```
 
+`ctx.waitUntil` after ACK is **not** a queue: Shopify already got 200, so a crashed isolate drops the order with no retry. Queues (or a D1 `OrderIngest` row written **before** ACK + cron sweeper) is the durability layer. BFCM lock contention is a later scale problem; silent loss on Fast-ACK is a v1 problem.
+
 ### Waterfall (serve 3 in-stock items)
 
 | Tier | Name | Logic | When it fires |
 | :--- | :--- | :--- | :--- |
-| 1 | Manual | `RecommendationRules` for this `base_product_id` | Merchant override always wins |
-| 2 | Co-purchase | Top `confidence_score` from `CoPurchaseMatrix`, join `InventoryShield` | Enough pairs with `pair_count >= min_support` (suggest **5** so badges are not “100% of 1 buyer”) |
-| 3 | Catalog / taxonomy | Same Shopify taxonomy category / collection, exclude self + gift-card tags | Cold start / new SKU |
+| 1 | Manual | `RecommendationRules` for this `base_product_id`. Also ingest Search & Discovery `shopify--discovery--product_recommendation.complementary_products` if the merchant already curated them. | Merchant / native Shopify complementary always wins |
+| 2 | Co-purchase | Top `confidence_score` from `CoPurchaseMatrix`, join `InventoryShield` | **Serve** if `pair_count >= 1` (beta: 2 if noisy). **Percent badge** only if `pair_count >= 5` |
+| 3 | Complement map | Static vertical JSON: source taxonomy GID → complementary GIDs (phone case → protector/charger, not another case). Then `ProductCatalog` in those target categories, in-stock, not self. | Cold start / new SKU. **Never same-leaf category** |
 | 4 | Bestseller | `ProductCatalog.sales_count` in-stock | Last fill so the widget is never empty |
 
-CBB live extra (we should keep as merchant toggles, not drop silently): **Exclusive Manual** mode; **Global** pin list; outbound exclusion (gift cards, warranties).
+Do **not** use Shopify `productRecommendations(intent: RELATED)` or Vectorize similarity inside the FBT widget. Shopify documents RELATED as **substitutable** (“You may also like”). Complementary (`intent: COMPLEMENTARY`) is **manual-only** via Search & Discovery — empty on a new store unless the merchant set it. Taxonomy itself has categories + attributes, **no native complement edges**.
+
+CBB live extra (keep as merchant toggles): **Exclusive Manual** mode; **Global** pin list; outbound exclusion (gift cards, warranties).
+
+Widget copy must match the tier that filled the slot: “Frequently bought together” only for Tier 2; “Goes with” / “Pair it with” for Tier 3; “Popular in this store” for Tier 4. Lying about FBT on a 0-order store is the actual churn mechanism, not “no embeddings.”
 
 ### Scores (no neural net required)
 
@@ -58,13 +68,15 @@ For product A recommending B:
 
 ### Explainer badge (the USP) — also no LLM
 
-Fill a **template from the same numbers**:
+Split two thresholds that were previously conflated:
 
-* `"{{pct}}% of customers who bought this also bought {{title}}"` where `pct = round(100 * confidence)` and `pair_count >= 5`  
-* Else `"Often bought together"`  
-* Else hide the badge (do not invent a percent)
+* **Serve** a co-purchase pair at `pair_count >= 1` (optionally 2). CBB’s own install mined **32 orders → 4 pairings**; those pairs are almost certainly support 1–3. Hiding Tier 2 until 5 is how we manufacture the “generic widget” complaint.  
+* **Print a percent** only at `pair_count >= 5`: `"{{pct}}% of customers who bought this also bought {{title}}"`.  
+* Else if Tier 2 but low support: `"Often bought together"` (no invented percent).  
+* Tier 3: `"Goes with this"` / a phrase from the static map — **not** an LLM sentence about fabric tone.  
+* Else hide the badge.
 
-That is the LimeSpot/CBB gap: they have the stats in admin; they do not print them on the storefront.
+That is the LimeSpot/CBB gap: they have the stats in admin; they do not print them on the storefront. LLM prose badges are the same App Store risk as fake percents.
 
 ---
 
@@ -75,13 +87,16 @@ That is the LimeSpot/CBB gap: they have the stats in admin; they do not print th
 | Pick the 3 PDP items | **No** | Latency 300ms–2s; cost scales with traffic; worse than co-purchase for FBT |
 | Storefront explainer percent | **No** | Hallucinates rates; stats already exist |
 | Chat “shopping assistant” as the recs product | **No** | Saturated; competes with Sidekick |
-| Extract attributes from title/body (skin type, compatibility, color) | **Yes, batch** | Feeds Tier 3 vertical templates; once per product create/update |
-| Compile Fashion / Beauty / Electronics rule JSON | **Yes, once** | Merchant picks a vertical; LLM writes filter specs, humans can edit |
-| Admin “why this pair?” paragraph | **Yes, on click** | 1 merchant action, not 50k shoppers |
+| Extract attributes from title/body (skin type, compatibility, color) | **Yes, batch, v1.5** | Filter on the complement map; **must not return product IDs**. Skip in v1 if the static map is shipping |
+| Compile Fashion / Beauty / Electronics **complement** JSON | **Yes, once, humans edit** | LimeSpot-style vertical pick (they ship 12). Not a per-SKU LLM job |
+| Per-SKU complementary product IDs | **No** | Hallucinated SKUs; join still needed. Use the map + catalog |
+| Admin “why this pair?” paragraph | **Yes, on click** | 1 merchant action, not 50k shoppers. Prompt must include `pair_count` / `confidence` |
+| LLM storefront social-proof sentence | **No** | Unauditable claim; App Store risk |
+| “AI Store Audit” auto-publishes 10 bundles | **No** | Silent merchandising change. On install: mine last 60–90 days of orders (CBB already does this) and offer **drafts** the merchant confirms |
 | Nightly QA: gift cards in recs, same-item dupes | **Optional** | Cheap classifier / rules first |
 | VisualAI look-alike | **Later** | Nosto already sells it; image embeddings ≠ v1 |
 
-### Offline catalog pass (recommended)
+### Offline catalog pass (v1.5, not required to ship the widget)
 
 On `products/create` and `products/update`:
 
@@ -117,6 +132,7 @@ Workers Paid is **one Cloudflare account** for the whole SaaS ($5/mo + usage), n
 | CF Llama 3.2 3B | $0.051 / M in, $0.335 / M out | Workers AI pricing (17 Sep 2026) |
 | CF bge-m3 embed | $0.012 / M input tokens | Workers AI embeddings |
 | Vectorize | 50M queried dims + 10M stored dims included on Paid | Vectorize pricing |
+| Cloudflare Queues | 1M ops / mo included on Paid; then $0.40 / M ops (~3 ops per delivered message) | Queues pricing |
 | text-embedding-3-small | $0.02 / M tokens | OpenAI |
 
 Token assumptions for an online “ask the model to pick 3 products” call: **~600 input + ~100 output** tokens (catalog stub + instruction). Real catalogs are larger → **these are lower bounds**.
@@ -127,7 +143,7 @@ Token assumptions for an online “ask the model to pick 3 products” call: **~
 | :--- | :--- | ---: | :--- | :--- |
 | **A. Waterfall + KV cache** | KV get | **~$0** | &lt;50 ms cached | Yes — this is v1 |
 | **B. Offline LLM enrich** (2k SKUs / mo) | Still KV get; LLM only on product webhooks | **~$0.30** (mini, 400 in / 150 out × 2k) | PDP unchanged | Yes |
-| **C. Embeddings cold-start** (CF bge-m3 + Vectorize) | KV first; ~10% miss → vector query | **&lt;$0.02** | +20–80 ms on miss | Optional v1.5 |
+| **C. Embeddings / Vectorize** | Do **not** put on the FBT widget (nearest-neighbor ≈ substitute). Optional later for a separate “Similar items” row; Shopify `intent: RELATED` already does this for free | **&lt;$0.02** if we ever run it | +20–80 ms | **Not v1** |
 | **D. Llama 3.2 3B every view** | LLM ranks live | **~$3.21** | 300–800 ms | Tight vs $19 after other costs |
 | **E. gpt-4o-mini every view** | LLM ranks live | **~$7.50** | 400–1200 ms | No — eats the plan |
 | **F. gpt-5 every view** | LLM ranks live | **~$194** | 1–3 s | Company-killing |
@@ -152,19 +168,37 @@ Token assumptions for an online “ask the model to pick 3 products” call: **~
 
 ## 5. Recommendation for this pack
 
-1. **v1 engine = CBB math + cache + printed confidence.** Call it “AI” in App Store copy the same way CBB does (association rules). Do not put “powered by GPT” on the widget.  
-2. **LLM budget: batch catalog JSON + optional admin explain.** Default model: gpt-4o-mini or Cloudflare `llama-3.2-3b` / `glm-4.7-flash` for structured extract. Cap: **&lt;$0.50 / shop / month**.  
-3. **Never block PDP render on an LLM.** Timeout = empty widget = bounce.  
-4. **VisualAI / gpt-5 ranking = Scale hypothesis**, not the $0–$49 wedge.  
-5. Explainer percents **must** be computed from `CoPurchaseMatrix`, with a minimum support — otherwise the USP becomes a lie and an App Store risk.
+1. **v1 engine = CBB math + cache + printed confidence + complement map.** Call it “AI” in App Store copy the same way CBB does (association rules). Do not put “powered by GPT” on the widget.  
+2. **Cold-start ≠ Vectorize.** Day-1: (a) mine last 60–90 days of orders into the matrix; (b) serve Tier 2 at support 1–2; (c) Tier 3 = vertical complement GIDs, not same-leaf category; (d) label the widget by source. Embeddings recommend the other iPhone case.  
+3. **LLM budget: optional.** v1 can ship with **zero LLM** if the 12-vertical complement JSON is hand-authored (or LLM-drafted once, humans edit). If we add catalog JSON extract later: cap **&lt;$0.50 / shop / month**.  
+4. **Never block PDP render on an LLM.** Timeout = empty widget = bounce.  
+5. **Durable Fast-ACK:** Queue.send (or D1 ingest row before 200) in Phase 2. Do not increment 10–45 pairs inside the webhook request. Do not sell 10–30s “micro-batch architecture” as a v1 epic.  
+6. **VisualAI / gpt-5 ranking / Vectorize = Scale hypothesis**, not the $0–$19 wedge.  
+7. Explainer percents **must** be computed from `CoPurchaseMatrix` at `pair_count >= 5`. LLM sentences are not a substitute USP.
 
 ---
 
 ## 6. Open items (not claimed as fact)
 
-* Exact min_support / min_confidence for fashion vs electronics (tune after 50 beta stores).  
-* Whether Shopify Search & Discovery already covers Tier 3 well enough that we should skip embeddings in v1.  
+* Exact `serve_min_support` (1 vs 2) and `badge_min_support` (5) per vertical — tune after ~50 beta stores.  
+* How complete merchant-assigned Shopify taxonomy GIDs are on $0/$19 stores (if uncategorized, complement map misses; fallback = Global pin + bestseller, still not same-title clones).  
 * Image-embedding cost for VisualAI (Workers AI ResNet is priced per million images — not modeled here).
+
+---
+
+## 7. Architecture peer-review freeze (Sept 2026)
+
+Challenge from Antigravity (DeepMind-style review). Verdicts below are research decisions; this file + [COMPARISON.md](COMPARISON.md) win on conflict.
+
+| # | Challenge | Verdict | Why |
+| :--- | :--- | :--- | :--- |
+| 1 | Vectorize + `bge-*` for $0/$19 cold-start | **YAGNI v1** | Cost was never the issue (~$0.01). Geometry is: cosine-similar ≠ complementary. Shopify `RELATED` already auto-generates substitutes from sales + descriptions + collections ([docs](https://shopify.dev/docs/storefronts/themes/product-merchandising/recommendations)). CBB ships Global + random-collection on sparse data and still sits at 4.9★. Fix: split support thresholds, historical order mine on install, source-honest widget titles. |
+| 2 | Same-category fallback is substitutes | **Must-fix v1** | Correct trap. Shopify taxonomy has **no** complement graph; `intent: complementary` is **merchant-manual** metafields, empty on new stores. Do **not** wait for an LLM per SKU. Ship a static vertical complement map (LimeSpot’s 12-industry pick is the pattern) + import S&D complementary metafields when present. LLM may draft the JSON **once**. |
+| 3 | D1 write contention → Queues in Phase 2 | **Thin queue = must-have; BFCM theater = YAGNI** | D1 is single-threaded ([limits](https://developers.cloudflare.com/d1/platform/limits/)). &lt;500 orders/mo will not lock-starve D1. Fast-ACK **without** durable offload **will** drop orders (`waitUntil` dies after 200, Shopify will not retry). Queues Paid: 1M ops included, then $0.40/M (~3 ops/message). 500 orders/mo is noise vs the included 1M. Implement: webhook → `Queue.send` → consumer `db.batch()`. Skip 10–30s “micro-batch platform” stories until 10k+ orders/mo or multi-tenant BFCM. |
+| 4a | LLM dynamic social-proof badges | **Drop** | Vanity + misleading-claim risk. Templates from stats already are the USP. |
+| 4b | 1-click “AI Store Audit” auto 10 bundles | **Must-have as order mining + drafts; drop as generative auto-publish** | CBB’s wizard already async-mines history. That is high-ROI. GPT inventing 10 bundles from titles is merchandising vandalism. |
+
+**v1 USP vs CBB (not “we also have Apriori”):** storefront source label + printed confidence when support exists; complement-not-clone fallback; inventory hide; free plan does not lock the engine (CBB free = 3 manual, no AI); post-purchase 1-click (CBB has none). That is enough. Do not invent a second AI story for App Store screenshots.
 
 ---
 *File: `ALGORITHM_AND_LLM_COST.md` · prices will move; re-check Cloudflare + OpenAI pages before a board cost slide.*

@@ -2,9 +2,9 @@
 **টিম লিড (Team Lead & Strategy):** এনামুল ভাই  
 **লিড ইঞ্জিনিয়ার ও প্রোডাক্ট ম্যানেজার (Lead Engineer & Product Manager):** নুরুজ্জামান রুবেল  
 **স্ট্যাটাস:** চূড়ান্ত মাস্টার ব্লুপ্রিন্ট (Final Master Blueprint)  
-**ভার্সন:** ১.১ (সেপ্টেম্বর ২০২৬) — কম্পিটিটর স্ন্যাপশটের সাথে ফ্যাক্ট-ফিক্স  
+**ভার্সন:** ১.২ (সেপ্টেম্বর ২০২৬) — ওয়াটারফল Tier 3 = complement map; Fast-ACK = durable queue  
 **নোট:** অ্যাপের অফিশিয়াল নাম বোর্ড মিটিংয়ে চূড়ান্ত হবে। আপাতত টেকনিক্যাল স্পেক্সে এটিকে **[আমাদের অ্যাপ / The App]** হিসেবে উল্লেখ করা হয়েছে।  
-**লাইভ স্ন্যাপশট:** [COMPARISON.md](COMPARISON.md) জিতবে যেখানে এই ফাইল পুরনো নাম/সারফেস/প্রাইস লেখে। এই ডক ইমপ্লিমেন্টেশন হাইপোথিসিস; কম্পিটিটর ফোল্ডার প্রাইমারি রিসার্চ।
+**লাইভ স্ন্যাপশট:** [COMPARISON.md](COMPARISON.md) জিতবে যেখানে এই ফাইল পুরনো নাম/সারফেস/প্রাইস লেখে। অ্যালগরিদম/LLM/খরচ: [ALGORITHM_AND_LLM_COST.md](ALGORITHM_AND_LLM_COST.md)। এই ডক ইমপ্লিমেন্টেশন হাইপোথিসিস; কম্পিটিটর ফোল্ডার প্রাইমারি রিসার্চ।
 
 ---
 
@@ -95,7 +95,7 @@
 │  │ High-Speed Edge Engine (Cloudflare Workers Edge Architecture)          │  │
 │  │ • Runtime: Cloudflare Workers (workers/app.js, nodejs_compat)         │  │
 │  │ • Global Latency: < ৩০ms ল্যাটেন্সি, জিরো কোল্ড স্টার্ট, জিরো সার্ভার খরচ│
-│  │ • Webhook Ingestion: Fast-ACK (< ২৫ms-এ HTTP 200 OK)                  │  │
+│  │ • Webhook Ingestion: Fast-ACK (< ২৫ms) + Cloudflare Queue (durable)  │  │
 │  │ • Deduplication: X-Shopify-Webhook-Id দিয়ে D1-এ claimWebhookDelivery │  │
 │  │ • Cron Triggers: wrangler.toml crons = ["*/5 * * * *"]                │  │
 │  └──────────────────────────────────┬────────────────────────────────────┘  │
@@ -257,8 +257,18 @@ CREATE TABLE IF NOT EXISTS "ProductCatalog" (
   "updated_at" INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
   UNIQUE("shop", "product_id")
 );
-CREATE INDEX IF NOT EXISTS "idx_catalog_category" ON "ProductCatalog" ("shop", "category", "status");
+CREATE INDEX IF NOT EXISTS "idx_catalog_category" ON "ProductCatalog" ("shop", "taxonomy_category_id", "status");
 CREATE INDEX IF NOT EXISTS "idx_catalog_sales" ON "ProductCatalog" ("shop", "sales_count" DESC);
+
+-- App-global complement edges (also ship as Worker JSON). Not per-SKU LLM output.
+CREATE TABLE IF NOT EXISTS "ComplementMap" (
+  "id" TEXT PRIMARY KEY,
+  "vertical" TEXT NOT NULL,
+  "source_taxonomy_id" TEXT NOT NULL,
+  "target_taxonomy_id" TEXT NOT NULL,
+  UNIQUE("vertical", "source_taxonomy_id", "target_taxonomy_id")
+);
+CREATE INDEX IF NOT EXISTS "idx_complement_source" ON "ComplementMap" ("vertical", "source_taxonomy_id");
 
 CREATE TABLE IF NOT EXISTS "ProductVariants" (
   "id" TEXT PRIMARY KEY,
@@ -310,28 +320,29 @@ CREATE TABLE IF NOT EXISTS "DeadLetterQueue" (
 
 ## ৫. কোর রিকমেন্ডেশন অ্যালগরিদম ও ৪-টিয়ার এজ ওয়াটারফল চেইন
 
-কখনোই যেন কোনো স্টোরে খালি উইজেট না থাকে। **CBB লাইভ ওয়াটারফল:** Manual → Automatic AI → Global products → Random by collection (পার-টিয়ার টগল + exclusive-manual মোড)। নিচের চেইন সেই প্যাটার্নের অ্যাডাপ্টেশন (Random-এর বদলে taxonomy + bestseller)। স্টোরফ্রন্ট রেসপন্স ক্যাশড JSON হিসেবে সার্ভ করা টার্গেট; চারটা লাইভ D1 রাউন্ড-ট্রিপ গ্লোবাল সাব-১৫ms SLO নয়। **LLM PDP-তে নয়** — স্কোর/খরচ: [ALGORITHM_AND_LLM_COST.md](ALGORITHM_AND_LLM_COST.md)।
+কখনোই যেন কোনো স্টোরে খালি উইজেট না থাকে। **CBB লাইভ ওয়াটারফল:** Manual → Automatic AI → Global products → Random by collection (পার-টিয়ার টগল + exclusive-manual মোড)। নিচের চেইন সেই প্যাটার্নের অ্যাডাপ্টেশন। **Tier 3 same-leaf category নয়** (কেস দেখলে আরেকটা কেস = substitute)। স্ট্যাটিক ভার্টিক্যাল complement map + Search & Discovery complementary metafield ইমপোর্ট। **Vectorize / bge embeddings v1 নয়** — nearest-neighbor FBT নয়। স্টোরফ্রন্ট রেসপন্স ক্যাশড JSON; চারটা লাইভ D1 রাউন্ড-ট্রিপ গ্লোবাল সাব-১৫ms SLO নয়। **LLM PDP-তে নয়** — স্কোর/খরচ/পিয়ার-রিভিউ: [ALGORITHM_AND_LLM_COST.md](ALGORITHM_AND_LLM_COST.md)।
 
 ```
 [Storefront Request: GET /api/recs?shop=store.myshopify.com&product_id=123]
                                    │
                                    ▼
-[Tier 1: Manual / Curated Rule] ──► D1: SELECT FROM RecommendationRules WHERE base_id = ?
+[Tier 1: Manual / S&D complementary] ► RecommendationRules + shopify--discovery complementary metafields
                                    │ (ফলাফল না পেলে বা < ৩টি আইটেম হলে)
                                    ▼
-[Tier 2: Co-Purchase Matrix AI] ──► D1: SELECT recommended_product_id FROM CoPurchaseMatrix 
-                                   │    JOIN InventoryShield ON is_available = 1 
+[Tier 2: Co-Purchase Matrix] ─────► pair_count >= 1 serve; percent badge only if pair_count >= 5
+                                   │    JOIN InventoryShield ON is_available = 1
                                    │    ORDER BY confidence_score DESC LIMIT 3
-                                   │ (নতুন স্টোরে অতীতের অর্ডার ডেটা না থাকলে)
+                                   │ (নতুন SKU / সাপোর্ট ০ হলে)
                                    ▼
-[Tier 3: Category / Tag Matching]─► D1: SELECT * FROM ProductCatalog WHERE shop = ? AND category = ?
-                                   │    AND product_id != ? AND status = 'ACTIVE'
+[Tier 3: Complement map] ─────────► ComplementMap: source taxonomy GID → complementary GIDs
+                                   │    SELECT ProductCatalog WHERE taxonomy_category_id IN (...)
+                                   │    NOT same-leaf (phone case ↛ another phone case)
                                    │ (< ৩টি আইটেম হলে)
                                    ▼
-[Tier 4: Global Bestseller Fallback] D1: SELECT * FROM ProductCatalog WHERE shop = ?
-                                   │    ORDER BY sales_count DESC
+[Tier 4: Global Bestseller Fallback] ProductCatalog ORDER BY sales_count DESC
+                                   │
                                    ▼
-[Result JSON: cached at the edge + explainable badges + stock check]
+[Result JSON: cached + source label (FBT / Goes with / Popular) + stock check]
 ```
 
 ---
@@ -362,8 +373,8 @@ CREATE TABLE IF NOT EXISTS "DeadLetterQueue" (
 * **টেস্টেবল ডেলিভারেবল:** শপিফাই টেস্ট স্টোরে অ্যাপটি ১-ক্লিকে ইনস্টল হবে এবং শপিফাই অ্যাডমিন প্যানেলে নেটিভ এজ-পাওয়ার্ড ড্যাশবোর্ড দেখা যাবে।
 
 ### ফেজ ২: ক্লাউডফ্লেয়ার ডি১ (D1) স্কিমা ও ফাস্ট-এক ওয়েবহুক পাইপলাইন (সপ্তাহ ১-২ | ৩-৪ দিন)
-* **টাস্ক:** D1 মাইগ্রেশন (`migrations/0001_core_schema.sql`), `Session`, `WebhookDeliveries`, `CoPurchaseMatrix`, `InventoryShield` টেবিল তৈরি। `claimWebhookDelivery` মেথডে `X-Shopify-Webhook-Id` যাচাই ও < ২৫ms-এ HTTP 200 Fast-ACK রিটার্ন।
-* **টেস্টেবল ডেলিভারেবল:** শপিফাই স্টোরে নতুন অর্ডার বা ইনভেন্টরি পরিবর্তন হলে তা < ২৫ms-এ এজ ডেটাবেসে ও ডিডুপ্লিকেশন টেবিলে সংরক্ষিত হবে।
+* **টাস্ক:** D1 মাইগ্রেশন (`Session`, `WebhookDeliveries`, `CoPurchaseMatrix`, `InventoryShield`, `ComplementMap`)। `claimWebhookDelivery` → **Cloudflare Queue.send** (অর্ডার লাইন-আইটেম) → HTTP 200 **< ২৫ms**। Consumer: `db.batch()` পেয়ার আপসার্ট; `ctx.waitUntil`-only নয় (ACK-এর পর ক্র্যাশ = সাইলেন্ট ড্রপ, শপিফাই আর রিট্রাই করে না)। ১০–৩০s BFCM মাইক্রো-ব্যাচ প্ল্যাটফর্ম v1 নয়।
+* **টেস্টেবল ডেলিভারেবল:** নতুন অর্ডার < ২৫ms-এ ACK; কনজিউমার পরে ম্যাট্রিক্স আপডেট; একই `X-Shopify-Webhook-Id` দুবার চালালে পেয়ার ডাবল হবে না।
 
 ### ফেজ ৩: থিম অ্যাপ এক্সটেনশন ও কোর কাস্টম এলিমেন্ট স্ক্রিপ্ট (সপ্তাহ ২ | ৩ দিন)
 * **টাস্ক:** শপিফাই সিএলআই দিয়ে Theme App Extension তৈরি (`extensions/theme-extension/`)। নেটিভ লিকুইড ও ভ্যানিলা জেএস কাস্টম এলিমেন্ট আর্কিটেকচার (< ৫KB, জিরো ডিপেন্ডেন্সি)।
@@ -374,8 +385,8 @@ CREATE TABLE IF NOT EXISTS "DeadLetterQueue" (
 * **টেস্টেবল ডেলিভারেবল:** প্রোডাক্ট পেজে রেসপন্সিভ FBT উইজেট দৃশ্যমান হবে এবং কাস্টমার পেজ রিফ্রেশ না করেই সাইজ/কালার সিলেক্ট করতে পারবে।
 
 ### ফেজ ৫: ৪-টিয়ার সাব-১৫ms এজ ওয়াটারফল অ্যালগরিদম (সপ্তাহ ৪ | ৪-৫ দিন)
-* **টাস্ক:** Cloudflare Worker-এ D1 এসকিউএল দিয়ে ৪ স্তরের ক্যাসকেডিং ওয়াটারফল চেইন কোড করা (`Manual Rule` ➔ `Co-purchase AI` ➔ `Category Match` ➔ `Global Bestseller Fallback`)।
-* **টেস্টেবল ডেলিভারেবল:** পিডিপি উইজেটে স্টোরের নিজস্ব ডেটা দিয়ে < ১৫ মিলি-সেকেন্ডে রিয়েল পারসোনালাইজড বান্ডেল ফেচ হবে (কখনো বক্স খালি থাকবে না)।
+* **টাস্ক:** ক্যাশড ওয়াটারফল: `Manual/S&D complementary` ➔ `Co-purchase (serve ≥1, badge ≥5)` ➔ `ComplementMap` ➔ `Bestseller`। ইনস্টলে শেষ ৬০–৯০ দিনের অর্ডার মাইন → টপ পেয়ার **ড্রাফট** (অটো-পাবলিশ নয়)। Vectorize/bge v1 নয়। উইজেট টাইটেল সোর্স অনুযায়ী (FBT / Goes with / Popular)।
+* **টেস্টেবল ডেলিভারেবল:** কেস প্রোডাক্টে অন্য কেস আসবে না; সাপোর্ট ১–২ পেয়ার উইজেটে দেখাবে কিন্তু `%` ব্যাজ ছাপবে না; খালি বক্স থাকবে না।
 
 ### ফেজ ৬: ১-ক্লিক মাল্টি-অ্যাড টু কার্ট ও বান্ডেল ডিসকাউন্ট (সপ্তাহ ৪-৫ | ৩-৪ দিন)
 * **টাস্ক:** শপিফাই এজাক্স কার্ট এপিআই (`/cart/add.js`) দিয়ে এক ক্লিকে পুরো বান্ডেল কার্টে পুশ করা এবং শপিফাই স্বয়ংক্রিয় ডিসকাউন্ট দিয়ে বান্ডেল ছাড় (যেমন: ১০-১৫% অফ) কার্যকর করা।
@@ -428,7 +439,7 @@ CREATE TABLE IF NOT EXISTS "DeadLetterQueue" (
 * **কোর প্রিন্সিপালসমূহ (গ্লোবাল ওয়ার্ল্ড-ক্লাস অ্যাপস যেভাবে আর্কিটেক্ট করে):**
   * **Co-location Principle:** বিশ্বমানের ফ্রন্টএন্ড কোডবেসের মতো প্রতিটি উইজেটের সাব-ভিউ ও লজিক ফোল্ডার-লেভেলে কো-লোকেটেড থাকবে (`app/components/fbt/`, `app/components/cart-drawer/`)।
   * **Controller-View Pattern:** হাই-স্কেল এন্টারপ্রাইজ অ্যাপের মতো React Router Route (`loader`/`action`) বনাম প্রেজেন্টেশনাল View (`*View.jsx`) সম্পূর্ণ আলাদা থাকবে।
-  * **Fast-ACK & Idempotency:** বিশ্বমানের হাই-ভলিউম ওয়েবহুক পাইপলাইনের মতো `X-Shopify-Webhook-Id` দিয়ে **< ২৫ মিলি-সেকেন্ডে HTTP 200 OK** পাঠাবে এবং ব্যাকগ্রাউন্ডে ডেটা প্রসেস করবে।
+  * **Fast-ACK & Idempotency:** `X-Shopify-Webhook-Id` claim → Queue.send → **< ২৫ms HTTP 200**। পেয়ার ইনক্রিমেন্ট কনজিউমারে; `waitUntil`-only নয়।
   * **UI Extension Primitives:** টপ-পারফর্মিং শপিফাই এক্সটেনশনের মতো কোনো ভারী ফ্রেমওয়ার্ক নয়; সরাসরি নেটিভ `@shopify/ui-extensions` ও `root.createComponent` ব্যবহার করতে হবে।
   * **Zero-Weight Storefront:** বিশ্বমানের থিম অ্যাপ এক্সটেনশনের মতো পিওর Liquid ও Vanilla JS Custom Elements (`<clearrecs-*>`) দিয়ে তৈরি হবে (সাইজ < ৫KB, জিরো পেইজ স্লোডাউন)।
   * **Declarative Plan Gating:** প্রিমিয়াম SaaS অ্যাপগুলোর মতো `<PlanGate />` কম্পোনেন্ট দিয়ে সফট ব্লার ও আপগ্রেড ব্যানার দেখাবে, কোনো অপ্রত্যাশিত এরর বা ক্র্যাশ নয়।

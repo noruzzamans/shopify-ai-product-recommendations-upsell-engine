@@ -56,7 +56,7 @@ In professional software engineering, our architecture is divided into four dist
 - **Concept:** Acknowledging webhook requests within milliseconds while offloading heavy AI/ML calculations to background execution contexts.
 - **In Our App:**
   - Shopify requires webhooks to return HTTP 200 within 5 seconds or risks endpoint throttling.
-  - When `orders/create` or `inventory_levels/update` fires, Cloudflare Worker verifies the HMAC signature, checks `claimWebhookDelivery` in D1, returns HTTP 200 in **<25ms**, and offloads co-purchase graph updates asynchronously.
+  - When `orders/create` or `inventory_levels/update` fires, the Worker verifies HMAC, `claimWebhookDelivery` in D1, **enqueues** the payload (Cloudflare Queues), and returns HTTP 200 in **<25ms**. Pair increments run in the queue consumer via `db.batch()`. `ctx.waitUntil` alone is not durable: after 200, Shopify will not retry a crashed isolate.
 
 ### 7. Cognitive Load Minimization (Information Architecture)
 - **Concept:** Software interfaces should minimize the mental effort required for merchants to understand and configure settings.

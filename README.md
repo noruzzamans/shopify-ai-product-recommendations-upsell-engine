@@ -60,8 +60,8 @@
 
 1. **Tier 1: Merchant Curated Rules** (`RecommendationRules` — অগ্রাধিকার ভিত্তিতে মার্চেন্ট কর্তৃক নির্দিষ্ট করা বান্ডেল)
 2. **Tier 2: Co-Purchase Matrix AI** (`CoPurchaseMatrix` — রিয়েল অর্ডার হিস্ট্রি ও বাস্কেট অ্যানালাইসিস সিগন্যাল)
-3. **Tier 3: Category / Taxonomy Match** (Shopify Standard Product Taxonomy ভিত্তিক অটো-ম্যাচিং)
-4. **Tier 4: Global Bestseller Fallback** (স্টোরের টপ-কনভার্টিং ইনভেন্টরি-শিল্ডেড প্রোডাক্টস)
+3. **Tier 3: Complement map** (`ComplementMap` — same-leaf category নয়; কেস → প্রোটেক্টর/চার্জার)
+4. **Tier 4: Global Bestseller Fallback** (ইনভেন্টরি-শিল্ডেড বেস্টসেলার; উইজেট টাইটেল: Popular)
 
 ---
 
