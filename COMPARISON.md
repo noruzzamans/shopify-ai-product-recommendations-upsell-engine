@@ -1,6 +1,6 @@
 # Frozen competitor comparison
 **Snapshot date:** September 2026  
-**Rule:** If STRATEGY, MASTER, or Enamul’s memo disagree with this file or [DECISIONS.md](DECISIONS.md), **those two win** (this file = competitor numbers; DECISIONS = our product freeze). README is an index only.  
+**Precedence of truth:** `DECISIONS.md > ALGORITHM_AND_LLM_COST.md / MASTER_ARCHITECTURE_AND_ROADMAP.md > PROJECT_STRATEGY_AND_DATA_ANALYSIS.md. COMPARISON.md is authoritative ONLY for competitor facts (prices, ratings, surfaces).`  
 **Sources:** live App Store listings and admin/storefront teardowns in `competitors/`.
 
 ---
@@ -20,23 +20,23 @@ Not in this pack (named by LimeSpot chat as a migration target): **Rebuy**. Shop
 
 ## Live listing snapshot (September 2026)
 
-| | LimeSpot | CBB FBT | Wiser | Nosto |
-| :--- | :--- | :--- | :--- | :--- |
-| App Store | [limespot](https://apps.shopify.com/limespot) | [frequently-bought-together](https://apps.shopify.com/frequently-bought-together) | [recommended-products-wiser](https://apps.shopify.com/recommended-products-wiser) | [nosto-personalization-for-shopify](https://apps.shopify.com/nosto-personalization-for-shopify) |
-| Rating | 4.6 ★ (507) | 4.9 ★ (1,200+) | 4.9 ★ (559) | 4.7 ★ (61) |
-| Built for Shopify | No (not recorded) | Yes | Not recorded | No |
-| Live price | **Turbo** $0 (10 orders) / $9.99 → up to ~$400 by order volume. **Max** $50–$1,700 by store revenue | $0 (3 manual bundles, no AI) / $14.99 (50 orders) / $19.99 (500) / $39.99 unlimited | $0 (≤50 orders) / $9 / $19 / $49 (up to 500 orders) | “Free to install”; billed outside Shopify; teardown range $500–$2,500+/mo or % of GMV — not a public SKU |
-| Admin | External `app.limespot.com` | Embedded Shopify admin | Not fully reverse-engineered | External `my.nosto.com` |
-| FBT / bundles | Yes | Yes (core) | Yes | Yes |
-| 4-tier waterfall | Complex box cascade + FBT fallback | **Yes** (Manual → Auto AI → Global → Random by collection) | Unknown (admin not torn down) | Campaign + fallback fill/replace |
-| Slide cart drawer | No (theme cart conflicts warned) | No | **Yes** (demo) | No |
-| Checkout UI blocks | Yes (9 blocks) | No | Yes (demo) | Recs on checkout **Shopify Plus only** (per Nosto wizard) |
-| 1-click post-purchase (add to original order) | **Yes** — Settings → Checkout → Post-purchase page; card/Shop Pay only; default currency; $0.50 min; 120s timer | No | Yes (demo) | Yes (native post-purchase module) |
-| Thank-you / order-status blocks | Yes | No | Yes (demo) | Thank-you slot yes |
-| Storefront “why this item” explainer | No | No (Bundle explorer is admin-only) | No | No |
-| A/B testing | **Yes** — A/B/n on Max / Optimization | No | Not verified | **Yes** — statistical engine |
-| Inventory / OOS | Live preview recommended “The Out of Stock Snowboard” | Outbound exclusion + widget disable | Not verified | Merchandising / stock rules |
-| Onboarding | Industry pick (12 verticals) + billing; then 7-step guide | 3-step wizard (~60s) + theme embed deep-link | Spending-limit approval; card-on-file friction | Sales-led; no self-serve |
+| | LimeSpot | CBB FBT | Wiser | Nosto | **আমাদের অ্যাপ (The App)** |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| App Store | [limespot](https://apps.shopify.com/limespot) | [frequently-bought-together](https://apps.shopify.com/frequently-bought-together) | [recommended-products-wiser](https://apps.shopify.com/recommended-products-wiser) | [nosto-personalization-for-shopify](https://apps.shopify.com/nosto-personalization-for-shopify) | In Dev (Pre-launch) |
+| Rating | 4.6 ★ (507) | 4.9 ★ (1,200+) | 4.9 ★ (559) | 4.7 ★ (61) | Target: 5.0 ★ |
+| Built for Shopify | No (not recorded) | Yes | Not recorded | No | BFS-ready architecture; badge post-launch (D13) |
+| Live price | **Turbo** $0 (10 orders) / $9.99 → up to ~$400 by order volume. **Max** $50–$1,700 by store revenue | $0 (3 manual bundles, no AI) / $14.99 (50 orders) / $19.99 (500) / $39.99 unlimited | $0 (≤50 orders) / $9 / $19 / $49 (up to 500 orders) | “Free to install”; billed outside Shopify; teardown range $500–$2,500+/mo or % of GMV — not a public SKU | **$0** (≤$500 attr. GMV) / **$19** ($2k cap) / **$49** ($7.5k cap) / **$99** (No GMV Cap) |
+| Admin | External `app.limespot.com` | Embedded Shopify admin | Not fully reverse-engineered | External `my.nosto.com` | 100% Embedded Shopify Admin (Polaris web components + App Bridge v4) |
+| FBT / bundles | Yes | Yes (core) | Yes | Yes | **Yes (Core MVP)** + Discount Function + 1-Click Multi-Add |
+| 4-tier waterfall | Complex box cascade + FBT fallback | **Yes** (Manual → Auto AI → Global → Random by collection) | Unknown (admin not torn down) | Campaign + fallback fill/replace | **Yes** (Manual & S&D → Co-purchase + Time decay → Vertical Complement Map → Bestsellers) |
+| Slide cart drawer | No (theme cart conflicts warned) | No | **Yes** (demo) | No | Roadmap (Phase 8 — separate gzip budget) |
+| Checkout UI blocks | Yes (9 blocks) | No | Yes (demo) | Recs on checkout **Shopify Plus only** (per Nosto wizard) | Roadmap (Phase 10 — Plus-gated for checkout steps) |
+| 1-click post-purchase (add to original order) | **Yes** — Settings → Checkout → Post-purchase page; card/Shop Pay only; default currency; $0.50 min; 120s timer | No | Yes (demo) | Yes (native post-purchase module) | Roadmap (Phase 10 — Post-purchase UI extension) |
+| Thank-you / order-status blocks | Yes | No | Yes (demo) | Thank-you slot yes | Roadmap (Phase 10) |
+| Storefront “why this item” explainer | No | No (Bundle explorer is admin-only) | No | No | **Yes (Primary USP)** — Honest statistical badge (pair≥5 & orders(A)≥20) |
+| A/B testing | **Yes** — A/B/n on Max / Optimization | No | Not verified | **Yes** — statistical engine | Scale tier hypothesis (Phase 12+) |
+| Inventory / OOS | Live preview recommended “The Out of Stock Snowboard” | Outbound exclusion + widget disable | Not verified | Merchandising / stock rules | **0ms Liquid native check** (rec_product.available + DENY policy); webhook cache invalidation (D7) |
+| Onboarding | Industry pick (12 verticals) + billing; then 7-step guide | 3-step wizard (~60s) + theme embed deep-link | Spending-limit approval; card-on-file friction | Sales-led; no self-serve | 3-step wizard (~60s) + theme embed deep-link + 60-day historical order mine review |
 
 Discarded numbers (do not reuse in STRATEGY/MASTER): LimeSpot “$500–$1,200/mo” as the SMB price; LimeSpot “30–45 day setup” for Turbo; Julius 8% share / $3M ARR; Wiser 50% 30-day churn; Enamul packaging $0 / $99 / $249 / $499 (kept only as an old memo).
 
