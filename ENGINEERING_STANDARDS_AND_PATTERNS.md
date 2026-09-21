@@ -27,7 +27,7 @@ In professional software engineering, our architecture is divided into four dist
 - **Concept:** Every distinct layer of the app should handle one aspect of functionality.
 - **In Our App:**
   - **Server / Controller Layer (`routes/app.*.jsx`):** Fetches data (`loader`), processes mutations (`action`), checks billing plans.
-  - **Presentation Layer (`*View.jsx`):** Renders Shopify Polaris UI, handles user interaction, formats badges.
+  - **Presentation Layer (`*View.jsx`):** Polaris **web components**, handles user interaction, formats badges.
   - **Database Layer (`app/db/*.js`):** Interacts with Cloudflare D1 edge database (`sessions.js`, `webhooks.js`, `analytics.js`).
   - **Engine Services (`app/services/*`):** Executes 4-tier waterfall recommendation logic, co-purchase scoring, and zero-stock webhook events.
   - **Storefront Client Engine (`extensions/theme-extension/assets/*`):** Native Liquid + Vanilla JS Custom Elements. Gzip budget is **per widget** (FBT < 5KB; drawer separate). Recs from `$app` metafield or signed App Proxy — never public `GET /api/recs?shop=`.
@@ -50,7 +50,7 @@ In professional software engineering, our architecture is divided into four dist
 ### 5. Idempotency Principle (Webhook Deduplication)
 - **Concept:** An operation can be executed multiple times without changing the result beyond the initial execution.
 - **In Our App:**
-  - **Webhook Deduplication & Idempotency Pattern:** Shopify retries webhooks on network drops. We record the `X-Shopify-Webhook-Id` header in Cloudflare D1 `WebhookDeliveries` table (`claimWebhookDelivery`). Repeated webhooks return HTTP 200 immediately without re-calculating co-purchase graphs or duplicating analytics logs.
+  - **Webhook Deduplication:** Persist `X-Shopify-Event-Id` (do not double-count pair math for the same merchant action) and `X-Shopify-Webhook-Id` (skip already-seen deliveries — [Shopify](https://shopify.dev/docs/apps/build/webhooks/verify-deliveries)). `claimWebhookDelivery` uses both.
   - **Sessions:** `access_token_enc` AES-GCM. Never store a plaintext Admin token in D1.
   - **In-Place Inventory Update:** `inventory_levels/update` keys off `inventory_item_id` → `InventoryItemMap`. Invalidate cache; hide at render time only if `tracked && policy=DENY && available<=0`.
 

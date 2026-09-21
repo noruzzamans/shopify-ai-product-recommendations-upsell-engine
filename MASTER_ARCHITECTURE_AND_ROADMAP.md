@@ -2,9 +2,9 @@
 **টিম লিড (Team Lead & Strategy):** এনামুল ভাই  
 **লিড ইঞ্জিনিয়ার ও প্রোডাক্ট ম্যানেজার (Lead Engineer & Product Manager):** নুরুজ্জামান রুবেল  
 **স্ট্যাটাস:** চূড়ান্ত মাস্টার ব্লুপ্রিন্ট (Final Master Blueprint)  
-**ভার্সন:** ১.৩ (সেপ্টেম্বর ২০২৬) — B-রিভিউ: Discount Function, কো-পারচেজ কাউন্ট, অর্ডার হাইজিন, ইনভেন্টরি ম্যাপ, অ্যাট্রিবিউশন, App Proxy  
+**ভার্সন:** ১.৪ (২১ সেপ্টেম্বর ২০২৬) — A-ফিক্স: API 2026-07, Event-Id+Webhook-Id, ৬০-দিন মাইন, Polaris WC, BFS পোস্ট-লঞ্চ  
 **নোট:** অ্যাপের অফিশিয়াল নাম বোর্ড মিটিংয়ে চূড়ান্ত হবে। আপাতত টেকনিক্যাল স্পেক্সে এটিকে **[আমাদের অ্যাপ / The App]** হিসেবে উল্লেখ করা হয়েছে।  
-**লাইভ স্ন্যাপশট:** [COMPARISON.md](COMPARISON.md) জিতবে যেখানে এই ফাইল পুরনো নাম/সারফেস/প্রাইস লেখে। অ্যালগরিদম/LLM/খরচ: [ALGORITHM_AND_LLM_COST.md](ALGORITHM_AND_LLM_COST.md)। এই ডক ইমপ্লিমেন্টেশন হাইপোথিসিস; কম্পিটিটর ফোল্ডার প্রাইমারি রিসার্চ।
+**ফ্রিজ:** [DECISIONS.md](DECISIONS.md) + [COMPARISON.md](COMPARISON.md)। অ্যালগরিদম/খরচ: [ALGORITHM_AND_LLM_COST.md](ALGORITHM_AND_LLM_COST.md)। এই ডক ইমপ্লিমেন্টেশন হাইপোথিসিস।
 
 ---
 
@@ -45,7 +45,7 @@
 │  └── assets/clearrecs-*.js/css ──► Liquid + Vanilla JS (< 5KB, 0 Depend.)   │
 │                                                                             │
 │  [2. Checkout, Post-Purchase, Thank-you, Customer Account]                  │
-│  ├── api_version: "2026-01" (current stable; do not pin 2025-07)            │
+│  ├── api_version: "2026-07" (latest stable; bump quarterly; not 2026-10 RC) │
 │  ├── purchase.checkout.block.render ──► checkout bump (Plus-gated offers)   │
 │  ├── Checkout::PostPurchase::ShouldRender/Render ──► 120s 1-click add-to-order │
 │  ├── purchase.thank-you.block.render ──► recs/content (NOT add-to-order)    │
@@ -89,7 +89,7 @@
 │  ┌───────────────────────────────────────────────────────────────────────┐  │
 │  │ Merchant Admin Dashboard (100% Embedded in admin.shopify.com)         │  │
 │  │ • Framework: React Router v7 (@shopify/shopify-app-react-router)      │  │
-│  │ • UI System: Shopify Polaris React + App Bridge v4 (@shopify/app-bridge)│
+│  │ • UI System: Polaris **web components** + App Bridge v4                 │
 │  │ • Styling: Sass / SCSS (BEM, _tokens.scss, _base.scss)                │  │
 │  │ • Architecture: Controller-View Pattern (Route loader/action vs View) │  │
 │  └──────────────────────────────────┬────────────────────────────────────┘  │
@@ -102,7 +102,7 @@
 │  │   (not a worldwide sub-15ms SLO; Workers Paid is not $0)                │
 │  │ • Webhook ACK target: p99 < 500ms (Shopify hard limit 5s)               │
 │  │ • Webhook Ingestion: Fast-ACK + Cloudflare Queue (durable)              │  │
-│  │ • Deduplication: X-Shopify-Webhook-Id দিয়ে D1-এ claimWebhookDelivery │  │
+│  │ • Deduplication: X-Shopify-Event-Id (math) + X-Shopify-Webhook-Id (delivery) │
 │  │ • Cron Triggers: wrangler.toml crons = ["*/5 * * * *"]                │  │
 │  └──────────────────────────────────┬────────────────────────────────────┘  │
 │                                     │ Direct Edge SQL (Binding = "DB")      │
@@ -156,13 +156,18 @@ CREATE TABLE IF NOT EXISTS "Session" (
 CREATE INDEX IF NOT EXISTS "Session_shop_idx" ON "Session" ("shop");
 ```
 
-### ২. `WebhookDeliveries` টেবিল (Fast-ACK & Idempotency Pipeline)
+### ২. `WebhookDeliveries` টেবিল (Fast-ACK & Idempotency)
+
+[Shopify verify-deliveries](https://shopify.dev/docs/apps/build/webhooks/verify-deliveries): per-delivery skip = `X-Shopify-Webhook-Id`। একই মার্চেন্ট অ্যাকশন (রিট্রাই / মাল্টি-সাব) = `X-Shopify-Event-Id` — **পেয়ার কাউন্টে Event-Id** না হলে ডাবল কাউন্ট। দুটোই রাখো।
+
 ```sql
 CREATE TABLE IF NOT EXISTS "WebhookDeliveries" (
-  "webhook_id" TEXT PRIMARY KEY,
+  "event_id" TEXT NOT NULL,
+  "webhook_id" TEXT NOT NULL UNIQUE,
   "shop" TEXT NOT NULL,
   "topic" TEXT NOT NULL,
-  "received_at" INTEGER NOT NULL
+  "received_at" INTEGER NOT NULL,
+  PRIMARY KEY ("shop", "topic", "event_id")
 );
 CREATE INDEX IF NOT EXISTS "idx_webhook_deliveries_shop" ON "WebhookDeliveries" ("shop");
 CREATE INDEX IF NOT EXISTS "idx_webhook_deliveries_received_at" ON "WebhookDeliveries" ("received_at");
@@ -450,9 +455,11 @@ CREATE TABLE IF NOT EXISTS "DeadLetterQueue" (
 
 ---
 
-## ৬. ১২টি অ্যাজাইল মাইক্রো-ফেজ এক্সিকিউশন প্ল্যান (The 12 Agile Micro-Phases)
+## ৬. ফেজ প্ল্যান (ক্যালেন্ডার নয়)
 
-বড় ফেজের ঝুঁকি এড়িয়ে সহজে টেস্ট ও মনিটর করার জন্য পুরো প্রজেক্টটিকে **১২টি সুনির্দিষ্ট মাইক্রো-ফেজে** ভাগ করা হয়েছে। প্রতিটি ফেজের সময়সীমা **৩ থেকে ৫ দিন** এবং প্রতিটি ফেজেই একটি **স্বাধীন টেস্টেবল ডেলিভারেবল** পাওয়া যাবে:
+**MVP = Phase 1–7 + Discount Function + বিলিং** ([DECISIONS.md](DECISIONS.md) D8)। Phase 8–11 পরে। Phase 12 = সাবমিশন (BFS-ready); BFS ব্যাজ পোস্ট-লঞ্চ।
+
+বড় ফেজের ঝুঁকি এড়িয়ে সহজে টেস্ট ও মনিটর করার জন্য পুরো প্রজেক্টটিকে **১২টি সুনির্দিষ্ট মাইক্রো-ফেজে** ভাগ করা হয়েছে। প্রতিটি ফেজের সময়সীমা **হাইপোথিসিস**, সোলো ১০-সপ্তাহ গ্যারান্টি নয়:
 
 ```
 [Phase 1: Edge Shell & Auth] ─────► [Phase 2: D1 Database & Webhooks] ─► [Phase 3: Theme Custom Elements]
@@ -472,12 +479,12 @@ CREATE TABLE IF NOT EXISTS "DeadLetterQueue" (
 ```
 
 ### ফেজ ১: প্রজেক্ট সেটআপ ও ক্লাউডফ্লেয়ার এজ শেল (সপ্তাহ ১ | ৩-৪ দিন)
-* **টাস্ক:** বিশ্বমানের এন্টারপ্রাইজ শপিফাই অ্যাপের আর্কিটেকচার অনুযায়ী React Router v7 (`@shopify/shopify-app-react-router`) + Cloudflare Workers (`@react-router/cloudflare`, `wrangler.toml`), শপিফাই সিএলআই v4 কনফিগারেশন, ও-অথ (OAuth) অথেনটিকেশন ও টানেল সেটআপ।
-* **টেস্টেবল ডেলিভারেবল:** শপিফাই টেস্ট স্টোরে অ্যাপটি ১-ক্লিকে ইনস্টল হবে এবং শপিফাই অ্যাডমিন প্যানেলে নেটিভ এজ-পাওয়ার্ড ড্যাশবোর্ড দেখা যাবে।
+* **টাস্ক:** React Router v7 (`@shopify/shopify-app-react-router`) + Cloudflare Workers, CLI v4, OAuth। অ্যাডমিন UI: **Polaris web components** (Polaris React নয়)। API **`2026-07`**।
+* **টেস্টেবল ডেলিভারেবল:** টেস্ট স্টোরে ইনস্টল; এমবেডেড অ্যাডমিন শেল।
 
 ### ফেজ ২: ক্লাউডফ্লেয়ার ডি১ (D1) স্কিমা ও ফাস্ট-এক ওয়েবহুক পাইপলাইন (সপ্তাহ ১-২ | ৩-৪ দিন)
-* **টাস্ক:** D1 মাইগ্রেশন (`Session` encrypted token, `WebhookDeliveries`, `CoPurchaseMatrix`, `ProductOrderStats`, `InventoryItemMap`, `LocationInventory`, `ComplementMap`, `AttributedLineItems`)। Queue Fast-ACK। **GDPR** `customers/data_request|redact`, `shop/redact` এখানেই। Hygiene ফিল্টার consumer-এ। ACK টার্গেট p99 < 500ms।
-* **টেস্টেবল ডেলিভারেবল:** টেস্ট/ক্যান্সেল অর্ডার ম্যাট্রিক্সে ঢোকে না; GDPR webhook 200 দেয়; টোকেন প্লেইনটেক্সট D1-এ নেই।
+* **টাস্ক:** D1 মাইগ্রেশন + Queue Fast-ACK। Dedup: `event_id` + `webhook_id`। GDPR এখানেই। Hygiene consumer-এ। ACK p99 < 500ms।
+* **টেস্টেবল ডেলিভারেবল:** একই Event-Id দুবারে পেয়ার ডাবল নয়; টেস্ট/ক্যান্সেল অর্ডার ঢোকে না; টোকেন প্লেইনটেক্সট নেই।
 
 ### ফেজ ৩: থিম অ্যাপ এক্সটেনশন ও কোর কাস্টম এলিমেন্ট স্ক্রিপ্ট (সপ্তাহ ২ | ৩ দিন)
 * **টাস্ক:** শপিফাই সিএলআই দিয়ে Theme App Extension তৈরি (`extensions/theme-extension/`)। নেটিভ লিকুইড ও ভ্যানিলা জেএস কাস্টম এলিমেন্ট আর্কিটেকচার (< ৫KB, জিরো ডিপেন্ডেন্সি)।
@@ -488,7 +495,7 @@ CREATE TABLE IF NOT EXISTS "DeadLetterQueue" (
 * **টেস্টেবল ডেলিভারেবল:** নেটওয়ার্ক ট্যাবে `/api/recs?shop=` নেই; অ্যাড-টু-কার্ট পেয়লোডে `_cr_src=pdp_fbt` আছে।
 
 ### ফেজ ৫: ৪-টিয়ার ওয়াটারফল (ক্যাশড মেটাফিল্ড)
-* **টাস্ক:** ক্যাশড ওয়াটারফল + মেটাফিল্ড রাইট। Percent ব্যাজ: `pair_count >= 5` **এবং** `orders(A) >= 20`; নাহলে কাউন্ট ("12 customers")। ভ্যারিয়েন্ট-% নয় (ম্যাট্রিক্স প্রোডাক্ট-লেভেল)।
+* **টাস্ক:** ক্যাশড ওয়াটারফল + মেটাফিল্ড রাইট। ইনস্টলে **শেষ ৬০ দিনের** অর্ডার মাইন (`read_all_orders` v1 নয়)। Percent ব্যাজ: `pair_count >= 5` **এবং** `orders(A) >= 20`।
 * **টেস্টেবল ডেলিভারেবল:** ৬ অর্ডারের স্টোরে ৮৩% ব্যাজ ছাপাবে না; unpublished প্রোডাক্ট উইজেটে আসবে না।
 
 ### ফেজ ৬: ১-ক্লিক মাল্টি-অ্যাড + Discount Function (সপ্তাহ ৪-৫ | ৩-৪ দিন)
@@ -512,7 +519,7 @@ CREATE TABLE IF NOT EXISTS "DeadLetterQueue" (
 * **টেস্টেবল ডেলিভারেবল:** পোস্ট-পারচেজ লাইন মূল অর্ডারে যোগ; অ্যাট্রিবিউটেড সেন্ট বিলিং পিরিয়ডে বাড়ে।
 
 ### ফেজ ১১: পোলারিস মার্চেন্ট ড্যাশবোর্ড ও ৫-স্টেজ ফানেল অ্যানালিটিক্স (সপ্তাহ ৮-৯ | ৪-৫ দিন)
-* **টাস্ক:** বিশ্বমানের লার্জ-স্কেল শপিফাই অ্যাপগুলোতে যেভাবে কোড মেইনটেইনেবল রাখা হয়, সেই আন্তর্জাতিক কন্ট্রোলার-ভিউ আর্কিটেকচারে React Router v7 + Shopify Polaris দিয়ে ড্যাশবোর্ড, বান্ডেল এডিটর এবং ৫-স্টেজ ফানেল অ্যানালিটিক্স (`Rendered` ➔ `Viewed` ➔ `Clicked` ➔ `Added` ➔ `Converted`) তৈরি।
+* **টাস্ক:** React Router v7 + **Polaris web components** ড্যাশবোর্ড, বান্ডেল এডিটর, ৫-স্টেজ ফানেল।
 * **টেস্টেবল ডেলিভারেবল:** মার্চেন্ট ড্যাশবোর্ডে প্রতিদিন কত ডলার সেলস জেনারেট হলো এবং সম্পূর্ণ কনভার্সন ফানেল গ্রাফ দেখতে পারবে।
 
 ### ফেজ ১২: "Built for Shopify" 💎 অডিট, পারফরম্যান্স টিউন ও লঞ্চ (সপ্তাহ ৯-১০ | ৫-৬ দিন)
@@ -542,7 +549,7 @@ CREATE TABLE IF NOT EXISTS "DeadLetterQueue" (
 * **কোর প্রিন্সিপালসমূহ (গ্লোবাল ওয়ার্ল্ড-ক্লাস অ্যাপস যেভাবে আর্কিটেক্ট করে):**
   * **Co-location Principle:** বিশ্বমানের ফ্রন্টএন্ড কোডবেসের মতো প্রতিটি উইজেটের সাব-ভিউ ও লজিক ফোল্ডার-লেভেলে কো-লোকেটেড থাকবে (`app/components/fbt/`, `app/components/cart-drawer/`)।
   * **Controller-View Pattern:** হাই-স্কেল এন্টারপ্রাইজ অ্যাপের মতো React Router Route (`loader`/`action`) বনাম প্রেজেন্টেশনাল View (`*View.jsx`) সম্পূর্ণ আলাদা থাকবে।
-  * **Fast-ACK & Idempotency:** `X-Shopify-Webhook-Id` claim → Queue.send → **< ২৫ms HTTP 200**। পেয়ার ইনক্রিমেন্ট কনজিউমারে; `waitUntil`-only নয়।
+  * **Fast-ACK & Idempotency:** HMAC → persist Event-Id + Webhook-Id → Queue.send → p99 < 500ms 200। `waitUntil`-only নয়।
   * **UI Extension Primitives:** টপ-পারফর্মিং শপিফাই এক্সটেনশনের মতো কোনো ভারী ফ্রেমওয়ার্ক নয়; সরাসরি নেটিভ `@shopify/ui-extensions` ও `root.createComponent` ব্যবহার করতে হবে।
   * **Zero-Weight Storefront:** `pdp-fbt` gzip < 5KB **per widget**; কার্ট ড্রয়ার আলাদা বাজেট।
   * **Declarative Plan Gating:** ক্যাপ অতিক্রমে উইজেট অফ নয়; `<PlanGate />` + Billing API আপগ্রেড রিকোয়েস্ট।

@@ -1,6 +1,6 @@
 # Frozen competitor comparison
 **Snapshot date:** September 2026  
-**Rule:** If STRATEGY, MASTER, README, or Enamul’s memo disagree with this file, **this file wins**.  
+**Rule:** If STRATEGY, MASTER, or Enamul’s memo disagree with this file or [DECISIONS.md](DECISIONS.md), **those two win** (this file = competitor numbers; DECISIONS = our product freeze). README is an index only.  
 **Sources:** live App Store listings and admin/storefront teardowns in `competitors/`.
 
 ---

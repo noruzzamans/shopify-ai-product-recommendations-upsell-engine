@@ -1,7 +1,7 @@
 # 🚀 Shopify AI Product Recommendations & Upsell Engine
 **প্রজেক্ট স্ট্র্যাটেজি, ডেটা অ্যানালাইসিস এবং এক্সিকিউশন গাইড**  
 **নোট:** অ্যাপের অফিশিয়াল নাম বোর্ড মিটিংয়ে চূড়ান্ত হবে।  
-**লাইভ কম্পিটিটর স্ন্যাপশট:** [COMPARISON.md](COMPARISON.md) (সেপ্টেম্বর ২০২৬) — এই ফাইলের সাথে কনফ্লিক্ট হলে COMPARISON জিতবে।
+**লাইভ কম্পিটিটর স্ন্যাপশট:** [COMPARISON.md](COMPARISON.md)। সিদ্ধান্ত টেবিল: [DECISIONS.md](DECISIONS.md)। কনফ্লিক্টে সেই দুই ফাইল জিতবে।
 
 ---
 
@@ -12,7 +12,7 @@
 | টিম মেম্বার | অফিশিয়াল রোল (Role) | মূল দায়িত্ব ও কাজের পরিধি (Core Responsibilities) |
 | :--- | :--- | :--- |
 | **এনামুল ভাই** | **Team Lead & Strategic Director** | • **কোর ভিশন ও ডিরেকশন:** ইনিশিয়াল প্রজেক্ট স্ট্র্যাটেজি গাইডলাইন প্রদান এবং সামগ্রিক প্রোডাক্ট ভিশন পরিচালনা।<br>• **স্কোপ ও প্রায়োরিটি নির্ধারণ:** কোন মার্কেট সেগমেন্টে ফোকাস করা হবে ও কোন কোন ফিচার আগে আসবে তা চূড়ান্ত অনুমোদন।<br>• **স্ট্র্যাটেজিক রিভিউ ও মেন্টরশিপ:** রিসার্চ ও ইঞ্জিনিয়ারিং মাইলস্টোন নিয়মিত যাচাই, রিভিউ এবং কৌশলগত দিকনির্দেশনা প্রদান।<br>• **বিজনেস ও জিটিএম (GTM):** প্রোডাক্টের প্রাইসিং স্ট্র্যাটেজি, মার্কেট-ফিট এবং বিজনেস অ্যালাইনমেন্ট নিশ্চিতকরণ। |
-| **নুরুজ্জামান রুবেল** | **Lead Engineer & Product Manager (PM)** | • **প্রোডাক্ট ও কম্পিটিটর রিসার্চ:** এনামুল ভাইয়ের স্ট্র্যাটেজিক গাইডের ওপর ভিত্তি করে শীর্ষ ৪ প্রতিদ্বন্দীর (LimeSpot, Wiser, **CBB Frequently Bought Together**, Nosto) মেকানিক্স ও দুর্বলতার বিস্তারিত রিভার্স-ইঞ্জিনিয়ারিং ও সুযোগ চিহ্নিতকরণ।<br>• **সিস্টেম আর্কিটেকচার ডিজাইন:** শপিফাই নেটিভ এক্সটেনশন স্যুট, ক্লাউডফ্লেয়ার এজ আর্কিটেকচার (Cloudflare Workers + D1) এবং ৪-টিয়ার ওয়াটারফল রিকমেন্ডেশন ইঞ্জিনের টেকনিক্যাল ব্লুপ্রিন্ট প্রণয়ন।<br>• **হ্যান্ডস-অন ফুল-স্ট্যাক ডেভেলপমেন্ট:** React Router v7, Shopify Polaris, Native Vanilla JS Custom Elements (< ৫KB), Cloudflare Edge Workers ও শপিফাই ওয়েবহুকের সম্পূর্ণ হ্যান্ডস-অন কোডিং ও অ্যাপ্লিকেশন ডেভেলপমেন্ট।<br>• **ইঞ্জিনিয়ারিং স্ট্যান্ডার্ডস ও কোয়ালিটি:** [ENGINEERING_STANDARDS_AND_PATTERNS.md](ENGINEERING_STANDARDS_AND_PATTERNS.md) অনুযায়ী বিশ্বমানের ক্লিন কোড, পারফরম্যান্স (< ৫KB সাইজ), ১০০/১০০ লাইটহাউস স্কোর এবং "Built for Shopify" কমপ্লায়েন্স নিশ্চিতকরণ। |
+| **নুরুজ্জামান রুবেল** | **Lead Engineer & Product Manager (PM)** | • **প্রোডাক্ট ও কম্পিটিটর রিসার্চ:** এনামুল ভাইয়ের স্ট্র্যাটেজিক গাইডের ওপর ভিত্তি করে শীর্ষ ৪ প্রতিদ্বন্দীর (LimeSpot, Wiser, **CBB Frequently Bought Together**, Nosto) মেকানিক্স ও দুর্বলতার বিস্তারিত রিভার্স-ইঞ্জিনিয়ারিং ও সুযোগ চিহ্নিতকরণ।<br>• **সিস্টেম আর্কিটেকচার ডিজাইন:** শপিফাই নেটিভ এক্সটেনশন স্যুট, ক্লাউডফ্লেয়ার এজ আর্কিটেকচার (Cloudflare Workers + D1) এবং ৪-টিয়ার ওয়াটারফল রিকমেন্ডেশন ইঞ্জিনের টেকনিক্যাল ব্লুপ্রিন্ট প্রণয়ন।<br>• **হ্যান্ডস-অন ফুল-স্ট্যাক ডেভেলপমেন্ট:** React Router v7, Shopify Polaris, Native Vanilla JS Custom Elements (< ৫KB), Cloudflare Edge Workers ও শপিফাই ওয়েবহুকের সম্পূর্ণ হ্যান্ডস-অন কোডিং ও অ্যাপ্লিকেশন ডেভেলপমেন্ট।<br>• **ইঞ্জিনিয়ারিং স্ট্যান্ডার্ডস ও কোয়ালিটি:** [ENGINEERING_STANDARDS_AND_PATTERNS.md](ENGINEERING_STANDARDS_AND_PATTERNS.md) — BFS-ready সাবমিশন; BFS ব্যাজ পোস্ট-লঞ্চ ([DECISIONS.md](DECISIONS.md) D13)। |
 
 ---
 
@@ -123,12 +123,12 @@ SMB ব্যান্ড ইতিমধ্যে ভরা — খালি �
 ### মূল টেকনোলজি স্ট্যাক (Cloudflare Edge Architecture):
 | স্তর | প্রযুক্তি | ভূমিকা |
 | :--- | :--- | :--- |
-| **Merchant Dashboard**| React Router v7 + Polaris + App Bridge v4 | নেটিভ শপিফাই অ্যাডমিন এক্সপেরিয়েন্স ও আধুনিক কন্ট্রোলার-ভিউ আর্কিটেকচার। |
+| **Merchant Dashboard**| React Router v7 + Polaris web components + App Bridge v4 | নেটিভ শপিফাই অ্যাডমিন। |
 | **Edge Server & Runtime**| Cloudflare Workers (`workers/app.js`) | Recs metafield / App Proxy p99 < 500ms। Workers Paid $0 নয়। |
 | **Edge Database** | Cloudflare D1 (`migrations/*.sql`) | `CoPurchaseMatrix` + `ProductOrderStats` + `InventoryItemMap` + `AttributedLineItems`। |
 | **Checkout Extensions** | `@shopify/ui-extensions` + Discount Function | Function = বান্ডেল ছাড়। চেকআউট অফার Plus-গেটেড। |
 | **Storefront Widgets** | Liquid + Custom Elements | **Per-widget** gzip; FBT < 5KB। পাবলিক recs GET নয়। |
-| **Webhook Engine** | Queue Fast-ACK, p99 < 500ms | Hygiene + GDPR Phase 2। `inventory_item_id` ম্যাপ। |
+| **Webhook Engine** | Queue Fast-ACK, p99 < 500ms | Event-Id + Webhook-Id। Hygiene + GDPR Phase 2। |
 | **Styling & Design System**| Sass / SCSS (BEM & Tokens) | `_tokens.scss` ও `_base.scss` ভিত্তিক ক্লিন ও প্রিমিয়াম সিএসএস। |
 
 ---
@@ -144,24 +144,15 @@ SMB ব্যান্ড ইতিমধ্যে ভরা — খালি �
 
 ---
 
-## ৭. ৪-ফেজের ডেভেলপমেন্ট ও রিলিজ টাইমলাইন (8-9 Weeks Sprint)
+## ৭. MVP স্কোপ (শিপ ক্যালেন্ডার নয়)
 
-```text
-[Phase 1: Core Engine & FBT MVP] ───► [Phase 2: Smart Cart & Multi-Page]
-      (সপ্তাহ ১ - ৩ / ১৫-১৮ দিন)                   (সপ্তাহ ৪ - ৫ / ১০-১২ দিন)
-      • React Router v7 & Edge Setup                    • Slide Cart Drawer + Progress Bar
-      • App Embed & PDP FBT Widget                • Home/Collection/Cart Carousels
-      • ৪-টিয়ার ওয়াটারফল ব্যাকএন্ড                • Explainable AI Badges
-      • ইনলাইন ভ্যারিয়েন্ট সোয়াচ                 • Web Pixel Tracking
-                      │                                           │
-                      ▼                                           ▼
-[Phase 3: Checkout & Advanced AI] ──► [Phase 4: Polish, A/B Test & Launch]
-      (সপ্তাহ ৬ - ৭ / ১০-১২ দিন)                   (সপ্তাহ ৮ - ৯ / ১০-১২ দিন)
-      • Checkout UI Extension                     • ইন-উইজেট A/B টেস্টিং
-      • Post-Purchase 120s Upsell                 • "Built for Shopify" অডিট
-      • VisualAI & Replenishment Rules            • ড্যাশবোর্ড অ্যানালিটিক্স
-      • জিরো-স্টক রিয়েল-টাইম শিল্ড                • শপিফাই অ্যাপ স্টোর লাইভ
-```
+পুরনো **৪-ফেজ / ৮–৯ সপ্তাহ** প্ল্যান (VisualAI + BFS ওই উইন্ডোতে) **বাতিল**। এক রোডম্যাপ: [MASTER_ARCHITECTURE_AND_ROADMAP.md](MASTER_ARCHITECTURE_AND_ROADMAP.md) + [DECISIONS.md](DECISIONS.md) **D8**।
+
+* **MVP:** Phase 1–7 + Discount Function + বিলিং (PDP FBT, ওয়াটারফল, ব্যাজ, স্টক, অ্যাট্রিবিউশন)।
+* **পরে:** কার্ট ড্রয়ার, ক্যারোসেল, চেকআউট বাম্প, পোস্ট-পারচেজ।
+* **পোস্ট-লঞ্চ:** Built for Shopify (ইনস্টল/রিভিউ থ্রেশহোল্ড)। Lighthouse ১০০/১০০ দাবি নয়।
+
+Explainer ব্যাজ USP একটি **হাইপোথিসিস** (CTR মাপা হয়নি) — D14।
 
 ---
 
@@ -169,7 +160,8 @@ SMB ব্যান্ড ইতিমধ্যে ভরা — খালি �
 
 সম্পূর্ণ বিস্তারিত টেকনিক্যাল স্পেসিফিকেশন, ডেটা ফ্লো এবং কোড আর্কিটেকচার আলাদা ডেডিকেটেড মাস্টার ফাইলে সংরক্ষিত রয়েছে:
 
-* 📌 **Frozen comparison (this pack’s source of truth):** [COMPARISON.md](COMPARISON.md)
+* 📌 **Frozen decisions:** [DECISIONS.md](DECISIONS.md)
+* 📌 **Frozen comparison:** [COMPARISON.md](COMPARISON.md)
 * 💎 **মাস্টার আর্কিটেকচার ও এক্সিকিউশন রোডম্যাপ:** [MASTER_ARCHITECTURE_AND_ROADMAP.md](MASTER_ARCHITECTURE_AND_ROADMAP.md)
 * 📜 **ইঞ্জিনিয়ারিং স্ট্যান্ডার্ডস ও প্যাটার্নস:** [ENGINEERING_STANDARDS_AND_PATTERNS.md](ENGINEERING_STANDARDS_AND_PATTERNS.md)
 * 🔍 **LimeSpot Personalizer ডিপ-ডাইভ:** [competitors/LIMESPOT.md](competitors/LIMESPOT.md)

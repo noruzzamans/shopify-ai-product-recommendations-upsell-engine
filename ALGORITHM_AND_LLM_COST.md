@@ -1,7 +1,7 @@
 # Recommendation algorithm, LLM role, and cost
 **Snapshot:** September 2026  
 **Status:** Research finding (not a coded engine)  
-**Rule:** Storefront recs are **not** an LLM call. LLM is an offline helper. If STRATEGY/MASTER say otherwise, this file + [COMPARISON.md](COMPARISON.md) win.
+**Rule:** Storefront recs are **not** an LLM call. LLM is an offline helper. Conflicts → [DECISIONS.md](DECISIONS.md) + [COMPARISON.md](COMPARISON.md).
 
 **Sources:** CBB live waterfall ([competitors/CBB_FREQUENTLY_BOUGHT_TOGETHER.md](competitors/CBB_FREQUENTLY_BOUGHT_TOGETHER.md)); Nosto algorithm catalog ([competitors/NOSTO.md](competitors/NOSTO.md)); Cloudflare Workers / D1 / KV / Vectorize / Workers AI pricing (docs, Sept 2026); OpenAI list prices (gpt-4o-mini, gpt-5, text-embedding-3-small, Aug–Sept 2026).
 
@@ -25,7 +25,7 @@ Match CBB, with a **complement map** instead of same-leaf category / random-coll
 
 ```
 orders/create|cancelled + refunds/create
-  → HMAC + claimWebhookDelivery (D1, 1 row)
+  → HMAC + claimWebhookDelivery (D1: event_id + webhook_id)
   → hygiene filter (skip test / unpaid / cancelled / _cr_src lines)
   → Queue.send(order line-items)
   → HTTP 200 (target p99 < 500ms; Shopify limit 5s)
@@ -97,7 +97,7 @@ That is the LimeSpot/CBB gap: they have the stats in admin; they do not print th
 | Per-SKU complementary product IDs | **No** | Hallucinated SKUs; join still needed. Use the map + catalog |
 | Admin “why this pair?” paragraph | **Yes, on click** | 1 merchant action, not 50k shoppers. Prompt must include `pair_count` / `confidence` |
 | LLM storefront social-proof sentence | **No** | Unauditable claim; App Store risk |
-| “AI Store Audit” auto-publishes 10 bundles | **No** | Silent merchandising change. On install: mine last 60–90 days of orders (CBB already does this) and offer **drafts** the merchant confirms |
+| “AI Store Audit” auto-publishes 10 bundles | **No** | Silent merchandising change. On install: mine last **60 days** of orders (default Admin; `read_all_orders` is Partner-approved, not v1) and offer **drafts** |
 | Nightly QA: gift cards in recs, same-item dupes | **Optional** | Cheap classifier / rules first |
 | VisualAI look-alike | **Later** | Nosto already sells it; image embeddings ≠ v1 |
 
@@ -174,7 +174,7 @@ Token assumptions for an online “ask the model to pick 3 products” call: **~
 ## 5. Recommendation for this pack
 
 1. **v1 engine = CBB math + cache + printed confidence + complement map.** Call it “AI” in App Store copy the same way CBB does (association rules). Do not put “powered by GPT” on the widget.  
-2. **Cold-start ≠ Vectorize.** Day-1: (a) mine last 60–90 days of orders into the matrix; (b) serve Tier 2 at support 1–2; (c) Tier 3 = vertical complement GIDs, not same-leaf category; (d) label the widget by source. Embeddings recommend the other iPhone case.  
+2. **Cold-start ≠ Vectorize.** Day-1: (a) mine last **60 days** of orders; (b) serve Tier 2 at support 1–2; (c) Tier 3 = vertical complement GIDs; (d) label the widget by source.  
 3. **LLM budget: optional.** v1 can ship with **zero LLM** if the 12-vertical complement JSON is hand-authored (or LLM-drafted once, humans edit). If we add catalog JSON extract later: cap **&lt;$0.50 / shop / month**.  
 4. **Never block PDP render on an LLM.** Timeout = empty widget = bounce.  
 5. **Durable Fast-ACK:** Queue.send (or D1 ingest row before 200) in Phase 2. Do not increment 10–45 pairs inside the webhook request. Do not sell 10–30s “micro-batch architecture” as a v1 epic.  
