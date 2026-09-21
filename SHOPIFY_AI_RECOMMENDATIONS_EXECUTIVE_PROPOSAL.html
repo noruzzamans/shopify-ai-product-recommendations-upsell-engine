@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>Shopify AI Product Recommendations — Executive Blueprint</title>
+  
+  <!-- Premium Fonts: Plus Jakarta Sans for Headers, Hind Siliguri for Bengali, Inter for English numbers/data -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 14mm 10mm 14mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Hind Siliguri', 'Inter', -apple-system, sans-serif;
+      color: #1e293b;
+      line-height: 1.5;
+      font-size: 9.5pt;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Strict Page Boundary to PREVENT any cuts or awkward splits */
+    .page {
+      width: 100%;
+      height: 270mm;
+      max-height: 270mm;
+      page-break-after: always;
+      page-break-inside: avoid;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      position: relative;
+    }
+    .page:last-child {
+      page-break-after: avoid;
+    }
+
+    /* Header Bar */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 14pt;
+    }
+    .logo-text {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12pt;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+    }
+    .header-badge {
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 7.5pt;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Headings */
+    h1.main-title {
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+      font-size: 21pt;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.2;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.5px;
+    }
+    .main-subtitle {
+      font-size: 10.5pt;
+      color: #475569;
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+
+    h2.section-title {
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+      font-size: 13pt;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 10px 0;
+      padding-bottom: 5px;
+      border-bottom: 1.5px solid #e2e8f0;
+    }
+    .section-number {
+      background: #4f46e5;
+      color: #ffffff;
+      font-size: 8.5pt;
+      font-weight: 800;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+    }
+
+    /* Meta Grid */
+    .meta-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .meta-field strong {
+      display: block;
+      font-size: 7pt;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 700;
+      margin-bottom: 1px;
+    }
+    .meta-field span {
+      font-size: 9pt;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    /* KPI Highlights */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 14px 0 18px 0;
+    }
+    .kpi-box {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: left;
+    }
+    .kpi-box.green {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+      border-color: #86efac;
+    }
+    .kpi-box.indigo {
+      background: linear-gradient(135deg, #eef2ff 0%, #ffffff 100%);
+      border-color: #a5b4fc;
+    }
+    .kpi-box .num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17pt;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.1;
+      margin-bottom: 3px;
+    }
+    .kpi-box.green .num { color: #15803d; }
+    .kpi-box.indigo .num { color: #4338ca; }
+    .kpi-box .title {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #334155;
+    }
+    .kpi-box .desc {
+      font-size: 7.5pt;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    p {
+      margin: 0 0 8px 0;
+      color: #334155;
+      font-size: 9.5pt;
+      line-height: 1.55;
+    }
+
+    /* Callouts */
+    .callout {
+      background: #f8fafc;
+      border-left: 4px solid #4f46e5;
+      border-radius: 0 8px 8px 0;
+      padding: 10px 14px;
+      margin: 12px 0;
+      font-size: 9pt;
+      color: #1e293b;
+    }
+    .callout.green {
+      background: #f0fdf4;
+      border-left-color: #10b981;
+    }
+    .callout.amber {
+      background: #fffbeb;
+      border-left-color: #f59e0b;
+    }
+
+    /* Clean Tables */
+    table.clean-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      margin: 10px 0 14px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    table.clean-table th, table.clean-table td {
+      padding: 7px 10px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+    table.clean-table th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 7.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1.5px solid #cbd5e1;
+    }
+    table.clean-table tr:nth-child(even) td {
+      background: #fbfcfe;
+    }
+    table.clean-table td.bold {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Jossh Advantage Cards */
+    .jossh-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .jossh-card {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 9px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      border-top: 3.5px solid #4f46e5;
+    }
+    .jossh-card.green { border-top-color: #10b981; }
+    .jossh-card.amber { border-top-color: #f59e0b; }
+    .jossh-card.cyan { border-top-color: #06b6d4; }
+    .jossh-card.purple { border-top-color: #8b5cf6; }
+    .jossh-card.rose { border-top-color: #f43f5e; }
+    .jossh-card h3 {
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+      font-size: 9.2pt;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .jossh-card p {
+      font-size: 7.8pt;
+      color: #475569;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    /* Architecture Layers */
+    .layer-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .layer-card.blue { background: #f0f9ff; border-color: #bae6fd; border-left: 4px solid #0284c7; }
+    .layer-card.orange { background: #fff7ed; border-color: #fed7aa; border-left: 4px solid #ea580c; }
+    .layer-card.green { background: #f0fdf4; border-color: #bbf7d0; border-left: 4px solid #16a34a; }
+    .layer-title {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .layer-desc {
+      font-size: 8pt;
+      color: #475569;
+      margin-top: 2px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 7pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .pill-green { background: #dcfce7; color: #15803d; }
+    .pill-blue { background: #dbeafe; color: #1d4ed8; }
+    .pill-amber { background: #fef3c7; color: #b45309; }
+
+    /* Tri Grid Cards */
+    .tri-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 8px 0;
+    }
+    .tri-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 7.6pt;
+    }
+    .tri-card.blue { border-left: 3.5px solid #0284c7; background: #f0f9ff; }
+    .tri-card.amber { border-left: 3.5px solid #f59e0b; background: #fffbeb; }
+    .tri-card.green { border-left: 3.5px solid #10b981; background: #f0fdf4; }
+    .tri-card.purple { border-left: 3.5px solid #8b5cf6; background: #faf5ff; }
+    .tri-card h4 {
+      margin: 0 0 3px 0;
+      font-size: 8.2pt;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tri-card p {
+      margin: 0;
+      color: #475569;
+      line-height: 1.35;
+    }
+
+    /* Flow Step Grid */
+    .flow-step-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      margin: 8px 0;
+    }
+    .flow-step-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 7px 9px;
+    }
+    .flow-step-num {
+      display: inline-block;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: #4f46e5;
+      color: #ffffff;
+      font-size: 7pt;
+      font-weight: 800;
+      text-align: center;
+      line-height: 17px;
+      margin-bottom: 3px;
+    }
+    .flow-step-title {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+    .flow-step-desc {
+      font-size: 7.2pt;
+      color: #64748b;
+      line-height: 1.35;
+    }
+
+    /* Sprint Grid */
+    .sprint-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      margin: 8px 0;
+    }
+    .sprint-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 7px 9px;
+      font-size: 7.5pt;
+    }
+    .sprint-card .sprint-tag {
+      font-size: 6.8pt;
+      font-weight: 800;
+      color: #4f46e5;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .sprint-card .sprint-name {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+    .sprint-card .sprint-desc {
+      font-size: 7.2pt;
+      color: #475569;
+      line-height: 1.35;
+    }
+
+    /* Sign-off */
+    .signoff-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .signoff-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
+      background: #f8fafc;
+      text-align: center;
+    }
+    .signoff-card .role {
+      font-size: 7pt;
+      color: #64748b;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .signoff-card .name {
+      font-size: 10.5pt;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+    .signoff-card .status {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+    .status-ok { background: #dcfce7; color: #15803d; }
+    .status-wait { background: #fef3c7; color: #b45309; }
+
+    .page-footer {
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 7.5pt;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================================================================
+       PAGE 1: COVER & EXECUTIVE VISION (নির্বাহী ভিশন ও সুযোগ)
+       =================================================================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="brand-logo">
+        <div class="logo-icon">💎</div>
+        <div class="logo-text">Shopify AI Recommendations</div>
+      </div>
+      <div class="header-badge">Executive Blueprint • September 2026</div>
+    </div>
+
+    <h1 class="main-title">শপিফাই এআই প্রোডাক্ট রিকমেন্ডেশন ও আপসেল ইঞ্জিন</h1>
+    <div class="main-subtitle">
+      ক্লাউডফ্লেয়ার এজ আর্কিটেকচার, ০ms নেটওয়ার্ক ল্যাটেন্সি এবং ৯৯.৮% গ্রস মার্জিন সমৃদ্ধ নেক্সট-জেনারেশন শপিফাই SaaS প্রোডাক্ট ব্লুপ্রিন্ট
+    </div>
+
+    <div class="meta-card">
+      <div class="meta-field">
+        <strong>Strategic Director</strong>
+        <span>এনামুল ভাই</span>
+      </div>
+      <div class="meta-field">
+        <strong>Lead Engineer & PM</strong>
+        <span>নুরুজ্জামান রুবেল</span>
+      </div>
+      <div class="meta-field">
+        <strong>Target Audience</strong>
+        <span>CTO & Board of Directors</span>
+      </div>
+      <div class="meta-field">
+        <strong>Architecture Version</strong>
+        <span>Production Blueprint v1.4</span>
+      </div>
+    </div>
+
+    <h2 class="section-title"><span class="section-number">১</span> নির্বাহী পরিচিতি ও মার্কেট সুযোগ (Executive Summary)</h2>
+    
+    <p>
+      শপিফাই ইকোসিস্টেমে <strong>Product Recommendations & Frequently Bought Together (FBT)</strong> উইজেটগুলো কোনো সাধারণ টুল নয়; এগুলো মার্চেন্টদের জন্য সরাসরি একটি <strong>রেভিনিউ সেন্টার</strong>। মার্চেন্টরা তখনই রিকমেন্ডেশন অ্যাপ ব্যবহার করে যখন তারা ড্যাশবোর্ডে দেখে যে তাদের সেলস স্পষ্টভাবে বৃদ্ধি পাচ্ছে।
+    </p>
+
+    <p>
+      বর্তমান বাজারের শীর্ষ ৪টি প্রতিদ্বন্দী (LimeSpot, CBB FBT, Wiser, Nosto) পরীক্ষা করে আমরা দেখেছি:
+    </p>
+    <ul style="margin: 0 0 10px 18px; padding: 0; font-size: 9pt; color: #334155;">
+      <li><strong>ছোট মার্চেন্টরা (SMBs):</strong> CBB FBT-এর মতো অ্যাপ ব্যবহার করে কিন্তু ফ্রি প্ল্যানে কোনো AI বা অটোমেশন পায় না (হাতে ৩টি বান্ডেল বানাতে হয়)।</li>
+      <li><strong>বড় মার্চেন্টরা:</strong> LimeSpot বা Nosto ব্যবহার করে প্রতি মাসে $৪০০ থেকে $২,৫০০+ ডলার অতিরিক্ত খরচ করে এবং ভারী স্ক্রিপ্টের কারণে স্লো পেজ স্পিডে ভোগে।</li>
+    </ul>
+
+    <!-- 4 Key Value Metric Highlights -->
+    <div class="kpi-row">
+      <div class="kpi-box green">
+        <div class="num">৯৯.৮%</div>
+        <div class="title">গ্রস প্রফিট মার্জিন</div>
+        <div class="desc">$৯,৫০০ রেভিনিউতে মাত্র ~$২০ খরচ</div>
+      </div>
+      <div class="kpi-box indigo">
+        <div class="num">০ ms</div>
+        <div class="title">স্টোরফ্রন্ট ল্যাটেন্সি</div>
+        <div class="desc">লিকুইড মেটাফিল্ড প্রি-কম্পিউট</div>
+      </div>
+      <div class="kpi-box">
+        <div class="num">&lt; ৫ KB</div>
+        <div class="title">উইজেট ফাইল সাইজ</div>
+        <div class="desc">জিরো সাইট স্লোডাউন</div>
+      </div>
+      <div class="kpi-box">
+        <div class="num">$০ – $৯৯</div>
+        <div class="title">স্বচ্ছ প্রাইসিং ব্যান্ড</div>
+        <div class="desc">ফেয়ার অ্যাট্রিবিউটেড সেলস ক্যাপ</div>
+      </div>
+    </div>
+
+    <div class="callout green" style="margin-top: 10px;">
+      <strong>💡 আমাদের মূল সমাধান (Our Core Wedge):</strong> আমরা তৈরি করছি একটি আল্ট্রা-লাইটওয়েট (&lt; ৫KB) নেটিভ শপিফাই এক্সটেনশন স্যুট, যা ব্যাকগ্রাউন্ডে ক্লাউডফ্লেয়ার এজ (Cloudflare Workers + D1) দ্বারা পরিচালিত। রিকমেন্ডেশন ফলাফল আগে থেকেই শপিফাই মেটাফিল্ডে জমা থাকায় স্টোরফ্রন্ট লোড হয় <strong>০ms ল্যাটেন্সিতে এবং শূন্য অতিরিক্ত সার্ভার খরচে</strong>!
+    </div>
+
+    <!-- 3 Core Merchant Pain-Points & Our Edge Solution -->
+    <div style="margin-top: 12px;">
+      <div style="font-size: 8.5pt; font-weight: 800; color: #0f172a; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+        <span>🎯</span> মার্চেন্ট ফ্রাস্ট্রেশন বনাম আমাদের প্রযুক্তিগত সমাধান (Pain vs Solution):
+      </div>
+      <div class="tri-grid">
+        <div class="tri-card amber">
+          <h4>💸 অতিরিক্ত ও অন্যায্য প্রাইসিং</h4>
+          <p>কম্পিটিটররা ২০টি অর্ডার পার হলেই হঠাৎ বিল ডাবল করে দেয়। আমরা দিচ্ছি <strong>স্বচ্ছ GMV ক্যাপ ও গ্রেস পিরিয়ড</strong>, কোনো হিডেন চার্জ ছাড়া।</p>
+        </div>
+        <div class="tri-card blue">
+          <h4>🐢 সাইট স্লোডাউন ও বাউন্স রেট</h4>
+          <p>LimeSpot/Wiser-এর ১.৫MB ভারী স্ক্রিপ্ট পেজ স্পিড নষ্ট করে। আমাদের উইজেট <strong>&lt; ৫KB পিওর ভ্যানিলা</strong>, যা সাইট স্পিড অক্ষুণ্ণ রাখে।</p>
+        </div>
+        <div class="tri-card green">
+          <h4>👻 ওওএস পণ্য ও কোল্ড-স্টার্ট বাগ</h4>
+          <p>স্টক শেষ হওয়া পণ্য রেকমেন্ড করে সেল নষ্ট করে। আমাদের ইঞ্জিন <strong>লিকুইড রিয়েল-টাইম ০-স্টক শিল্ড</strong> দিয়ে তাৎক্ষণিক হাইড করে।</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; margin-top: 10px; justify-content: center;">
+      <span class="pill pill-green">⚡ ০ms লিকুইড রেন্ডার</span>
+      <span class="pill pill-blue">🎯 ৬০-দিনের সেলস হিস্ট্রি মাইনিং</span>
+      <span class="pill pill-amber">🔒 শপিফাই ডিসকাউন্ট ফাংশন সিকিউরিটি</span>
+    </div>
+
+    <div class="page-footer">
+      <span>Shopify AI Recommendations • Executive Technical Proposal</span>
+      <span>Confidential • Page 1</span>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       PAGE 2: COMPETITOR COMPARISON TABLE (কম্পিটিটর অ্যানালাইসিস)
+       =================================================================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="brand-logo">
+        <div class="logo-icon">📊</div>
+        <div class="logo-text">Competitor Analysis</div>
+      </div>
+      <div class="header-badge">Live Market Snapshot (Sep 2026)</div>
+    </div>
+
+    <h2 class="section-title"><span class="section-number">২</span> লাইভ কম্পিটিটর টিয়ারডাউন ও তুলনামূলক চিত্র</h2>
+
+    <p>
+      শপিফাই অ্যাপ স্টোরের শীর্ষ ৪টি প্রতিদ্বন্দীর অ্যাডমিন ও ডেমো স্টোরফ্রন্ট পরীক্ষা করে তৈরি করা লাইভ কম্প্যারিজন ম্যাট্রিক্স:
+    </p>
+
+    <table class="clean-table">
+      <thead>
+        <tr>
+          <th style="width: 20%;">ফিচার / মেট্রিক</th>
+          <th style="width: 18%;">LimeSpot</th>
+          <th style="width: 20%;">CBB FBT</th>
+          <th style="width: 18%;">Wiser</th>
+          <th style="width: 24%; background: #eef2ff; color: #4338ca;">আমাদের অ্যাপ 💎</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="bold">অ্যাপ স্টোর রেটিং</td>
+          <td>4.6 ★ (507)</td>
+          <td>4.9 ★ (1,200+)</td>
+          <td>4.9 ★ (559)</td>
+          <td class="bold" style="background: #f0fdf4; color: #15803d;">টার্গেট: 5.0 ★</td>
+        </tr>
+        <tr>
+          <td class="bold">লাইভ প্রাইসিং</td>
+          <td>$০–$৪০০ (Turbo)<br>$৫০–$১,৭০০ (Max)</td>
+          <td>$০ (৩টি ম্যানুয়াল বান্ডেল)<br>$১৪.৯৯ / $১৯.৯৯ / $৩৯.৯৯</td>
+          <td>$০ (≤৫০ অর্ডার)<br>$৯ / $১৯ / $৪৯</td>
+          <td class="bold" style="background: #f0fdf4; color: #15803d;">$০ / $১৯ / $৪৯ / $৯৯<br>(ফেয়ার GMV ক্যাপ)</td>
+        </tr>
+        <tr>
+          <td class="bold">ফ্রি প্ল্যানে AI অটোমেশন</td>
+          <td>সীমিত (১০ অর্ডার)</td>
+          <td>❌ <strong>সম্পূর্ণ বন্ধ</strong> (শুধু ম্যানুয়াল)</td>
+          <td>সীমিত (৫০ অর্ডার)</td>
+          <td class="bold" style="background: #f0fdf4; color: #15803d;">✅ <strong>৬০-দিনের হিস্ট্রি মাইন</strong></td>
+        </tr>
+        <tr>
+          <td class="bold">অ্যাডমিন ইন্টারফেস</td>
+          <td>এক্সটার্নাল পোর্টাল (<code>limespot.com</code>)</td>
+          <td>এমবেডেড শপিফাই অ্যাডমিন</td>
+          <td>আংশিক রিভার্স-ইঞ্জিনিয়ার্ড</td>
+          <td class="bold" style="background: #f0fdf4; color: #15803d;">১০০% নেটিভ এমবেডেড (Polaris)</td>
+        </tr>
+        <tr>
+          <td class="bold">স্টক-আউট ফিল্টারিং</td>
+          <td>❌ লাইভ প্রিভিউতে OOS দেখায়</td>
+          <td>আউটবাউন্ড এক্সক্লুশন</td>
+          <td>ভেরিফাইড নয়</td>
+          <td class="bold" style="background: #f0fdf4; color: #15803d;">✅ <strong>০ms লিকুইড চেক</strong> (OOS হাইড)</td>
+        </tr>
+        <tr>
+          <td class="bold">বান্ডেল ডিসকাউন্ট</td>
+          <td>অটোমেটিক ডিসকাউন্ট</td>
+          <td>ড্রাফট / কোড ভিত্তিক</td>
+          <td>কুপন কোড</td>
+          <td class="bold" style="background: #f0fdf4; color: #15803d;">Shopify Discount Function</td>
+        </tr>
+        <tr>
+          <td class="bold">সোশ্যাল-প্রুফ ব্যাজ</td>
+          <td>নেই</td>
+          <td>নেই (অ্যাডমিনে সীমাবদ্ধ)</td>
+          <td>নেই</td>
+          <td class="bold" style="background: #f0fdf4; color: #15803d;">✅ <strong>Explainer Badge</strong> (“৮৪% কিনেছেন”)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout green" style="margin-top: 12px;">
+      <strong>🎯 কম্পিটিটর সামারি:</strong> CBB ফ্রি প্ল্যানে কোনো AI দেয় না, আর LimeSpot আউট-অব-স্টক প্রোডাক্ট দেখানোর মারাত্মক বাগ এবং অতিরিক্ত প্রাইসিংয়ে ভোগে। আমরা তাদের সব দুর্বলতা সমাধান করে একটি স্বচ্ছ, দ্রুতগতির অ্যাপ দিচ্ছি।
+    </div>
+
+    <!-- 3 Fatal Competitor Flaws & Our Strategic Moat -->
+    <div style="margin-top: 12px;">
+      <div style="font-size: 8.5pt; font-weight: 800; color: #0f172a; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+        <span>🔍</span> প্রতিদ্বন্দীদের ৩টি মারাত্মক দুর্বলতা ও আমাদের মার্কেট এন্ট্রি স্ট্র্যাটেজি:
+      </div>
+      <div class="tri-grid">
+        <div class="tri-card amber">
+          <h4>🛑 LimeSpot-এর মারাত্মক ফাঁদ</h4>
+          <p>লাইভ স্টোরে স্টক শেষ হওয়া পণ্য প্রিভিউতে দেখায় এবং ১.৮MB স্ক্রিপ্ট লোড করে। মার্চেন্টরা স্পিড ড্রপ দেখে আনইনস্টল করে। <strong>আমাদের কাউন্টার: ০ms লিকুইড OOS শিল্ড।</strong></p>
+        </div>
+        <div class="tri-card blue">
+          <h4>❌ CBB-এর তথাকথিত ফ্রি প্ল্যান</h4>
+          <p>ফ্রি প্ল্যান নামমাত্র; কোনো অটোমেশন নেই, প্রতি প্রোডাক্টের জন্য ৩টি বান্ডেল ম্যানুয়ালি চুজ করতে হয়। <strong>আমাদের কাউন্টার: ফ্রি টিয়ারেই ৬০-দিনের সেলস মাইনিং।</strong></p>
+        </div>
+        <div class="tri-card green">
+          <h4>⚠️ Wiser-এর ক্লাউড ল্যাটেন্সি</h4>
+          <p>প্রতিটি স্টোরফ্রন্ট ভিজিটে রিমোট এপিআই কল করায় পেজ লোডিং ডিলে হয় এবং মেটাফিল্ড ক্যাশ নেই। <strong>আমাদের কাউন্টার: ক্লাউডফ্লেয়ার এজ মেটাফিল্ড প্রি-কম্পিউট।</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>Shopify AI Recommendations • Executive Technical Proposal</span>
+      <span>Confidential • Page 2</span>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       PAGE 3: OUR 4 UNFAIR ADVANTAGES (আলাদা পেজে আমাদের ৪টি জোস সুবিধা!)
+       =================================================================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="brand-logo">
+        <div class="logo-icon">🚀</div>
+        <div class="logo-text">Our Unfair Advantages</div>
+      </div>
+      <div class="header-badge">Core Strategic Moat</div>
+    </div>
+
+    <h2 class="section-title"><span class="section-number">৩</span> আমাদের ৬টি প্রধান কৌশলগত শ্রেষ্ঠত্ব (Our 6 Core Strategic Moats)</h2>
+
+    <p>
+      বোর্ড মিটিং এবং ইনভেস্টরদের সামনে আমাদের প্রোডাক্টের সবচেয়ে বড় শক্তি হলো এই ৬টি প্রযুক্তিগত ও স্ট্র্যাটেজিক শ্রেষ্ঠত্ব, যা বাজারে অন্য কারও নেই:
+    </p>
+
+    <div class="jossh-grid">
+      <div class="jossh-card green">
+        <h3>🎯 ১. ফ্রি প্ল্যানেই ৬০-দিনের হিস্ট্রি মাইন</h3>
+        <p>
+          <strong>CBB-এর দুর্বলতা আক্রমণ:</strong> CBB ফ্রি প্ল্যানে কোনো AI রিকমেন্ডেশন দেয় না। আমাদের অ্যাপ ইনস্টল হওয়ামাত্রই পেছনের ৬০ দিনের সেলস ডেটা মাইন করে তাৎক্ষণিক টপ বান্ডেল তৈরি করে দেবে। মার্চেন্ট প্রথম দিন থেকেই সেলস পাবে!
+        </p>
+      </div>
+
+      <div class="jossh-card amber">
+        <h3>🛡️ ২. জিরো-স্টক লিকুইড রিয়েল-টাইম শিল্ড</h3>
+        <p>
+          <strong>LimeSpot-এর বড় ত্রুটি দূরীকরণ:</strong> LimeSpot-এর লাইভ প্রিভিউতে স্টক শেষ হওয়া পণ্য শো করার বাগ পাওয়া গেছে। আমাদের অ্যাপ লিকুইড রেন্ডার টাইমে ০ms-এ স্টক চেক করে—স্টক শেষ হলে স্বয়ংক্রিয়ভাবে উইজেট থেকে হাইড হয়ে যাবে।
+        </p>
+      </div>
+
+      <div class="jossh-card cyan">
+        <h3>🔒 ৩. অ্যান্টি-টেম্পার শপিফাই ডিসকাউন্ট ফাংশন</h3>
+        <p>
+          <strong>নিরাপদ বান্ডেল ডিসকাউন্ট:</strong> ক্রেতারা ব্রাউজার কনসোল দিয়ে কোনো ফেক ডিসকাউন্ট ক্লেইম করতে পারবে না। ডিসকাউন্ট সরাসরি শপ মেটাফিল্ড থেকে শপিফাই নেটিভ WebAssembly (Rust) ফাংশনে সুরক্ষিতভাবে প্রসেস হবে।
+        </p>
+      </div>
+
+      <div class="jossh-card">
+        <h3>⚡ ৪. আল্ট্রা-লাইটওয়েট স্টোরফ্রন্ট (&lt; ৫KB)</h3>
+        <p>
+          <strong>জিরো সাইট স্লোডাউন:</strong> স্টোরফ্রন্টে কোনো React বা ভারী স্ক্রিপ্ট নেই। পিওর লিকুইড ও ভ্যানিলা জাভাস্ক্রিপ্ট কাস্টম এলিমেন্টে তৈরি। শপিফাই "Built for Shopify" স্পিড অডিটে ১০০/১০০ লাইটহাউস স্কোর বজায় থাকবে।
+        </p>
+      </div>
+
+      <div class="jossh-card purple">
+        <h3>💬 ৫. সোশ্যাল-প্রুফ ড্রাইভেন কনভার্শন ব্যাজ</h3>
+        <p>
+          <strong>Explainer Badge:</strong> উইজেটে ডাটা-ভেরিফাইড ব্যাজ থাকবে: “৮৪% ক্রেতা এটি একসাথে কিনেছেন”। কোনো ফেক কাউন্টার নয়, রিয়েল সেলস হিস্ট্রি থেকে গণনা করা হবে, যা ক্রেতার ট্রাস্ট বহুগুণ বাড়িয়ে কনভার্শন বুস্ট করে।
+        </p>
+      </div>
+
+      <div class="jossh-card rose">
+        <h3>🌐 ৬. শপিফাই মার্কেটস ও অটো-কারেন্সি</h3>
+        <p>
+          <strong>গ্লোবাল স্টোর রেডি:</strong> কোনো বাড়তি কনফিগারেশন ছাড়াই শপিফাই মার্কেটস ও মাল্টি-কারেন্সি সাপোর্ট করবে। যেকোনো দেশের ভিজিটরের জন্য স্থানীয় কারেন্সিতে সঠিক রাউন্ডিং রুলস সহ রিকমেন্ডেশনের দাম দেখাবে।
+        </p>
+      </div>
+    </div>
+
+    <!-- Speed & Architecture Benchmark Comparison Box -->
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; margin: 8px 0;">
+      <div style="font-size: 8.2pt; font-weight: 800; color: #0f172a; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;">
+        <span>⚡</span> স্পিড ও টেকনিক্যাল হেড-টু-হেড বেঞ্চমার্ক (Performance Benchmark Specs):
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 7.5pt;">
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px;">
+          <div style="color: #64748b; font-weight: 600;">স্ক্রিপ্ট সাইজ (Asset Weight)</div>
+          <div style="font-weight: 700; color: #0f172a; margin-top: 1px;">LimeSpot: ~১.৮ MB | CBB: ৩২০ KB</div>
+          <div style="font-weight: 800; color: #16a34a; margin-top: 1px;">💎 আমাদের অ্যাপ: &lt; ৫ KB (৮০× হালকা)</div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px;">
+          <div style="color: #64748b; font-weight: 600;">স্টোরফ্রন্ট নেটওয়ার্ক ল্যাটেন্সি</div>
+          <div style="font-weight: 700; color: #0f172a; margin-top: 1px;">LimeSpot: ৩০০–৬০০ms | Wiser: ১৫০ms</div>
+          <div style="font-weight: 800; color: #16a34a; margin-top: 1px;">💎 আমাদের অ্যাপ: ০ ms (লিকুইড প্রি-রেন্ডার)</div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px;">
+          <div style="color: #64748b; font-weight: 600;">ইনভেন্টরি OOS সেফটি</div>
+          <div style="font-weight: 700; color: #dc2626; margin-top: 1px;">LimeSpot: স্টক-আউট পণ্য প্রিভিউ করে</div>
+          <div style="font-weight: 800; color: #16a34a; margin-top: 1px;">💎 আমাদের অ্যাপ: ১০০% ইনস্ট্যান্ট ০-স্টক শিল্ড</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout amber" style="margin-top: 8px;">
+      <strong>💡 বোর্ড মিটিং পিচ পয়েন্ট:</strong> "মার্চেন্টদের অ্যাপ আনইনস্টল করার প্রধান ২টি কারণ—সাইট স্লো হওয়া এবং স্টক-আউট পণ্য রেকমেন্ড করা। আমরা এই দুটো সমস্যার গোড়াতেই স্থায়ী আর্কিটেকচারাল সমাধান দিয়েছি। ফলে আমাদের চার্ন রেট (Churn Rate) হবে বাজারের সর্বনিম্ন (&lt;১.৫%)।"
+    </div>
+
+    <div class="page-footer">
+      <span>Shopify AI Recommendations • Executive Technical Proposal</span>
+      <span>Confidential • Page 3</span>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       PAGE 4: SYSTEM ARCHITECTURE & 4-TIER WATERFALL
+       =================================================================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="brand-logo">
+        <div class="logo-icon">⚡</div>
+        <div class="logo-text">System Architecture</div>
+      </div>
+      <div class="header-badge">Cloudflare Edge + D1 + Metafields</div>
+    </div>
+
+    <h2 class="section-title"><span class="section-number">৪</span> হাই-পারফরম্যান্স এজ সিস্টেম আর্কিটেকচার</h2>
+
+    <p>
+      মার্চেন্টের পেজ স্পিড যেন বিন্দুমাত্র না কমে এবং আমাদের সার্ভার খরচ যেন শূন্যের কাছাকাছি থাকে, সেজন্য ৩টি পরিষ্কার স্তরে আর্কিটেকচার গঠিত:
+    </p>
+
+    <!-- 3 Clean Layers -->
+    <div class="layer-card blue">
+      <div>
+        <div class="layer-title">১. স্টোরফ্রন্ট লেয়ার (Theme App Extension)</div>
+        <div class="layer-desc"><code>&lt;clearrecs-fbt&gt;</code> ভ্যানিলা কাস্টম এলিমেন্ট (< ৫KB)। প্রোডাক্ট মেটাফিল্ড থেকে ০ms-এ লিকুইড সরাসরি রেন্ডার করে।</div>
+      </div>
+      <span class="pill pill-blue">০ms Network RTT</span>
+    </div>
+
+    <div class="layer-card orange">
+      <div>
+        <div class="layer-title">২. এজ কম্পিউটিং ও কিউ (Cloudflare Workers & Queues)</div>
+        <div class="layer-desc">অর্ডার ওয়েব হুক পেয়ে ৫০০ms-এর মধ্যে Fast-ACK পাঠায় এবং কিউতে নিরাপদে জমা রেখে পেয়ার ম্যাট্রিক্স আপডেট করে।</div>
+      </div>
+      <span class="pill pill-amber">Fast-ACK &lt; ৫০০ms</span>
+    </div>
+
+    <div class="layer-card green">
+      <div>
+        <div class="layer-title">৩. এজ ডেটাবেস ও ডিসকাউন্ট (Cloudflare D1 & Shopify Function)</div>
+        <div class="layer-desc">সার্ভারলেস SQLite ডেটাবেসে কো-পারচেজ ম্যাট্রিক্স সংরক্ষণ এবং শপিফাই নেটিভ ফাংশন দিয়ে চেকআউট ডিসকাউন্ট প্রসেস।</div>
+      </div>
+      <span class="pill pill-green">Edge SQL • 0 Pools</span>
+    </div>
+
+    <h2 class="section-title" style="margin-top: 18px;"><span class="section-number">৫</span> ৪-টিয়ার জিরো-এম্পটি-স্টেট ওয়াটারফল চেইন</h2>
+    <p>কখনোই যেন কোনো প্রোডাক্ট পেজে উইজেট খালি না থাকে, সেজন্য স্বয়ংক্রিয় ৪টি ব্যাকআপ স্টেপ:</p>
+
+    <table class="clean-table">
+      <thead>
+        <tr>
+          <th>টিয়ার লেভেল</th>
+          <th>নাম</th>
+          <th>কাজের লজিক</th>
+          <th>কখন ফায়ার করবে</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="bold">Tier 1 (সর্বোচ্চ)</td>
+          <td>ম্যানুয়াল রুলস</td>
+          <td>মার্চেন্টের কিউরেটেড FBT পেয়ারিং অথবা শপিফাই Search & Discovery কমপ্লিমেন্টারি মেটাফিল্ড।</td>
+          <td>মার্চেন্ট নিজে পেয়ারিং সেট করলে সবার আগে এটি দেখাবে।</td>
+        </tr>
+        <tr>
+          <td class="bold">Tier 2 (কোর ইঞ্জিন)</td>
+          <td>কো-পারচেজ ম্যাট্রিক্স</td>
+          <td>অ্যাসোসিয়েশন রুল মাইনিং: <code>pair_count / ProductOrderStats.order_count</code>।</td>
+          <td>বিগত অর্ডারে অন্তত ১ বার পণ্য দুটি একসাথে বিক্রি হলে।</td>
+        </tr>
+        <tr>
+          <td class="bold">Tier 3 (কোল্ড-স্টার্ট)</td>
+          <td>কমপ্লিমেন্ট ম্যাপ</td>
+          <td>ট্যাক্সোনমি ক্রস-ম্যাচিং (যেমন: জুতার সাথে মোজা; <strong>কখনোই সেম কেস নয়</strong>)।</td>
+          <td>নতুন প্রোডাক্ট বা যেখানে অর্ডারের ইতিহাস নেই।</td>
+        </tr>
+        <tr>
+          <td class="bold">Tier 4 (ফলব্যাক)</td>
+          <td>স্টোর বেস্টসেলার</td>
+          <td>দোকানের সর্বোচ্চ বিক্রি হওয়া জনপ্রিয় সচল পণ্য।</td>
+          <td>সর্বশেষ ব্যাকআপ যাতে উইজেট কখনই খালি না থাকে।</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Real-time Data Flow Pipeline -->
+    <div style="margin-top: 12px;">
+      <div style="font-size: 8.5pt; font-weight: 800; color: #0f172a; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+        <span>🔄</span> রিয়েল-টাইম ডেটা ফ্লো ও মেটাফিল্ড সিঙ্ক্রোনাইজেশন পাইপলাইন (Edge Pipeline):
+      </div>
+      <div class="flow-step-grid">
+        <div class="flow-step-card">
+          <div class="flow-step-num">১</div>
+          <div class="flow-step-title">অর্ডার ইভেন্ট ট্রিগার</div>
+          <div class="flow-step-desc">ক্রেতা চেকআউট সম্পন্ন করলেই শপিফাই <code>orders/create</code> ওয়েবহুক ট্রিগার করে আমাদের এজ অ্যান্ডপয়েন্টে।</div>
+        </div>
+        <div class="flow-step-card">
+          <div class="flow-step-num">২</div>
+          <div class="flow-step-title">এজ ফাস্ট-একনলেজ (&lt;১০০ms)</div>
+          <div class="flow-step-desc">Cloudflare Worker শপিফাইকে তাৎক্ষণিক <code>200 OK</code> দিয়ে অর্ডার পে-লোডটি Cloudflare Queue-তে পুশ করে।</div>
+        </div>
+        <div class="flow-step-card">
+          <div class="flow-step-num">৩</div>
+          <div class="flow-step-title">D1 কো-পারচেজ ম্যাট্রিক্স</div>
+          <div class="flow-step-desc">ব্যাকগ্রাউন্ডে কিউ কনজিউমার D1 ডেটাবেসে পেয়ার ফ্রিকোয়েন্সি আপডেট করে এবং টপ অ্যাসোসিয়েটেড বান্ডেল বের করে।</div>
+        </div>
+        <div class="flow-step-card">
+          <div class="flow-step-num">৪</div>
+          <div class="flow-step-title">মেটাফিল্ড রাইট (০ms লোড)</div>
+          <div class="flow-step-desc">টপ বান্ডেল শপিফাই মেটাফিল্ডে সেভ হয়। পরবর্তী স্টোরফ্রন্ট ভিজিট সরাসরি লিকুইড থেকে <strong>০ms-এ রেন্ডার হয়</strong>!</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>Shopify AI Recommendations • Executive Technical Proposal</span>
+      <span>Confidential • Page 4</span>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       PAGE 5: UNIT ECONOMICS & FLEET P&L (আলাদা পেজে লাভ ও খরচের হিসাব)
+       =================================================================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="brand-logo">
+        <div class="logo-icon">💰</div>
+        <div class="logo-text">Unit Economics & P&L</div>
+      </div>
+      <div class="header-badge">Financial Model • 99.8% Gross Margin</div>
+    </div>
+
+    <h2 class="section-title"><span class="section-number">৬</span> ক্লাউড ইনফ্রাস্ট্রাকচার ও সার্ভার খরচ বিশ্লেষণ</h2>
+
+    <p>
+      আমাদের আর্কিটেকচারে ক্লাউড খরচ অবিশ্বাস্য রকমের কম। নিচে ৫০০টি পেইড স্টোরের বাস্তব আর্থিক হিসাব তুলে ধরা হলো:
+    </p>
+
+    <div class="callout green">
+      <strong>🔑 খরচের মূল রহস্য:</strong> আমরা স্টোরফ্রন্টে প্রতি পেজভিউতে কোনো লাইভ LLM (GPT) কল করি না। ব্যাকগ্রাউন্ডে প্রি-কম্পিউট করে শপিফাই মেটাফিল্ডে ডেটা সেভ রাখা হয়। ফলে দিনে লাখ লাখ ক্রেতা উইজেট দেখলেও আমাদের ক্লাউডফ্লেয়ার সার্ভারে কোনো হিট পড়ে না—<strong>স্টোরফ্রন্ট ভিউতে আমাদের খরচ $০.০০!</strong>
+    </div>
+
+    <h3 style="font-size: 10pt; color: #0f172a; margin: 12px 0 6px 0; font-weight: 700;">৫০০টি পেইড স্টোরের ফ্লিট সিমুলেশন ($১৯ Starter Plan):</h3>
+
+    <table class="clean-table">
+      <thead>
+        <tr>
+          <th>ব্যয় / আয়ের খাত</th>
+          <th>ভুল আর্কিটেকচার (প্রতি ভিউতে GPT-4o-mini)</th>
+          <th style="background: #ecfdf5; color: #065f46;">আমাদের এজ + মেটাফিল্ড আর্কিটেকচার 💎</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="bold">মাসিক মোট আয় (৫০০ × $১৯)</td>
+          <td>$৯,৫০০ / মাস</td>
+          <td class="bold" style="background: #f0fdf4; color: #15803d;">$৯,৫০০ / মাস</td>
+        </tr>
+        <tr>
+          <td class="bold">ক্লাউডফ্লেয়ার ইনফ্রা (Workers + D1)</td>
+          <td>~$২০ / মাস</td>
+          <td>~$২০ / মাস</td>
+        </tr>
+        <tr>
+          <td class="bold">লাইভ AI / LLM API খরচ</td>
+          <td style="color: #b91c1c; font-weight: 700;">$৩,৭৫০ / মাস (প্রফিটের ৪০% শেষ)</td>
+          <td class="bold" style="background: #f0fdf4; color: #15803d;">$০.০০ / মাস (প্রি-কম্পিউট)</td>
+        </tr>
+        <tr>
+          <td class="bold">মোট মাসিক সার্ভার বিল</td>
+          <td style="color: #b91c1c; font-weight: 700;">~$৩,৭৭০ / মাস</td>
+          <td class="bold" style="background: #f0fdf4; color: #15803d;">মাত্র ~$২০.০০ / মাস!</td>
+        </tr>
+        <tr>
+          <td class="bold" style="font-size: 9.5pt;">নেট গ্রস প্রফিট মার্জিন</td>
+          <td style="color: #b91c1c; font-weight: 700;">৬০.৩% ($৫,৭৩০)</td>
+          <td class="bold" style="background: #dcfce7; color: #15803d; font-size: 10.5pt;">৯৯.৮% ($৯,৪৮০ / মাস)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="kpi-row" style="margin-top: 14px;">
+      <div class="kpi-box green">
+        <div class="num">~$০.০৪</div>
+        <div class="title">প্রতি শপের মাসিক খরচ</div>
+        <div class="desc">৪ সেন্ট / স্টোর / মাস</div>
+      </div>
+      <div class="kpi-box green">
+        <div class="num">&gt; ৯৯%</div>
+        <div class="title">প্রফিটেবিলিটি মার্জিন</div>
+        <div class="desc">সফটওয়্যার বিজনেসের গোল্ড স্ট্যান্ডার্ড</div>
+      </div>
+      <div class="kpi-box indigo">
+        <div class="num">$১,১৪,০০০</div>
+        <div class="title">বার্ষিক রান-রেট (ARR)</div>
+        <div class="desc">৫০০ স্টোর স্কেলে ($১৯/মাস)</div>
+      </div>
+      <div class="kpi-box indigo">
+        <div class="num">$২৪০</div>
+        <div class="title">বার্ষিক মোট সার্ভার বিল</div>
+        <div class="desc">পুরো ৫০০ স্টোরের বার্ষিক ইনফ্রা</div>
+      </div>
+    </div>
+
+    <div class="callout amber" style="margin-top: 10px;">
+      <strong>⚠️ ফ্রি টিয়ারের খরচ কত?</strong> একটি ফ্রি স্টোরের জন্য মাসে খরচ হবে <strong>১ সেন্টেরও কম (মাত্র ~$০.০০১ বা ১০ পয়সা)</strong>। কারণ ক্লাউডফ্লেয়ারের $৫ প্ল্যানে প্রতি মাসে ১ কোটি রিকোয়েস্ট ফ্রি থাকে। ১,০০০টি ফ্রি স্টোর একসাথে থাকলেও আমাদের কোনো বাড়তি বিল আসবে না!
+    </div>
+
+    <!-- 3-Year Scale Trajectory & Financial Safeguards -->
+    <div style="margin-top: 12px;">
+      <div style="font-size: 8.5pt; font-weight: 800; color: #0f172a; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+        <span>📈</span> ৩-বছরের ফিন্যান্সিয়াল গ্রোথ ও স্কেলিং ট্র্যাজেক্টরি (Financial Projections):
+      </div>
+      <div class="tri-grid">
+        <div class="tri-card green">
+          <h4>🚀 Year 1 (৫০০ পেইড শপ)</h4>
+          <p><strong>মাসিক আয়:</strong> $৯,৫০০ ($১,১৪,০০০ ARR)<br><strong>ক্লাউড বিল:</strong> ~$২০/মাস (৯৯.৮% মার্জিন)</p>
+        </div>
+        <div class="tri-card blue">
+          <h4>🏆 Year 2 (২,০০০ পেইড শপ)</h4>
+          <p><strong>মাসিক আয়:</strong> $৩৮,০০০ ($৪,৫৬,০০০ ARR)<br><strong>ক্লাউড বিল:</strong> ~$৭৫/মাস (৯৯.৮% মার্জিন)</p>
+        </div>
+        <div class="tri-card purple">
+          <h4>🌐 Year 3 (৫,০০০ পেইড শপ)</h4>
+          <p><strong>মাসিক আয়:</strong> $৯৫,০০০ ($১.১৪M ARR)<br><strong>ক্লাউড বিল:</strong> ~$১৮০/মাস (৯৯.৮% মার্জিন)</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 8px; font-size: 7.6pt; color: #475569; display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; padding: 5px 10px; border-radius: 6px;">
+      <span>🔒 <strong>ইনফ্রা সেফগার্ড:</strong> ক্লাউডফ্লেয়ার এজ আর্কিটেকচারে ১০× ট্রাফিক স্পাইকেও ডাউনটাইম ০%।</span>
+      <span>🛡️ <strong>ক্যাশ প্রোটেকশন:</strong> শপিফাই মেটাফিল্ড রিডে প্রতি মাসে $০ এপিআই ফি।</span>
+    </div>
+
+    <div class="page-footer">
+      <span>Shopify AI Recommendations • Executive Technical Proposal</span>
+      <span>Confidential • Page 5</span>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       PAGE 6: DETAILED PRICING PLANS (আলাদা পেজে ইন-ডেপ্থ প্রাইসিং)
+       =================================================================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="brand-logo">
+        <div class="logo-icon">🏷️</div>
+        <div class="logo-text">Detailed Pricing Plans</div>
+      </div>
+      <div class="header-badge">Fair Capped Tier Architecture</div>
+    </div>
+
+    <h2 class="section-title"><span class="section-number">৭</span> বিস্তারিত প্রাইসিং প্ল্যান ও ফিচার ম্যাট্রিক্স</h2>
+
+    <p>
+      আমরা তৈরি করেছি একটি স্বচ্ছ ও ফেয়ার-ক্যাপড প্রাইসিং কাঠামো, যা শপিফাই বিলিং এপিআই (Billing API v2) দিয়ে চলবে:
+    </p>
+
+    <table class="clean-table" style="font-size: 8pt;">
+      <thead>
+        <tr>
+          <th>ফিচার / সুবিধা</th>
+          <th>Free Tier ($০/মাস)</th>
+          <th>Starter ($১৯/মাস)</th>
+          <th>Growth ($৪৯/মাস)</th>
+          <th style="background: #eef2ff; color: #4338ca;">Scale / Pro ($৯৯/মাস)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="bold">অ্যাট্রিবিউটেড সেলস ক্যাপ</td>
+          <td>$৫০০ / মাস</td>
+          <td>$২,০০০ / মাস</td>
+          <td>$৭,৫০০ / মাস</td>
+          <td class="bold" style="background: #f0fdf4; color: #15803d;">নো GMV ক্যাপ (আনলিমিটেড)</td>
+        </tr>
+        <tr>
+          <td class="bold">ক্যাপ পার হলে আচরণ</td>
+          <td>উইজেট চালু থাকে (গ্রেস)</td>
+          <td>উইজেট চালু থাকে (গ্রেস)</td>
+          <td>উইজেট চালু থাকে (গ্রেস)</td>
+          <td>কখনোই ক্যাপ নেই</td>
+        </tr>
+        <tr>
+          <td class="bold">কোর PDP FBT উইজেট</td>
+          <td>✅ অন্তর্ভুক্ত (< ৫KB)</td>
+          <td>✅ অন্তর্ভুক্ত (< ৫KB)</td>
+          <td>✅ অন্তর্ভুক্ত (< ৫KB)</td>
+          <td>✅ অন্তর্ভুক্ত (< ৫KB)</td>
+        </tr>
+        <tr>
+          <td class="bold">১-ক্লিক মাল্টি-অ্যাড কার্ট</td>
+          <td>✅ অন্তর্ভুক্ত</td>
+          <td>✅ অন্তর্ভুক্ত</td>
+          <td>✅ অন্তর্ভুক্ত</td>
+          <td>✅ অন্তর্ভুক্ত</td>
+        </tr>
+        <tr>
+          <td class="bold">ডিসকাউন্ট ফাংশন</td>
+          <td>বেসিক বান্ডেল ছাড়</td>
+          <td>পার-প্রোডাক্ট কাস্টম %</td>
+          <td>অ্যাডভান্সড বান্ডেল রুলস</td>
+          <td>মাল্টি-টিয়ার ভলিউম ডিসকাউন্ট</td>
+        </tr>
+        <tr>
+          <td class="bold">৬০-দিন ইনস্টল হিস্ট্রি মাইন</td>
+          <td>✅ স্বয়ংক্রিয় ড্রাফট</td>
+          <td>✅ স্বয়ংক্রিয় ড্রাফট</td>
+          <td>✅ স্বয়ংক্রিয় ড্রাফট</td>
+          <td>✅ বাল্ক ক্যাটালগ রিমাইনিং</td>
+        </tr>
+        <tr>
+          <td class="bold">০ms রিয়েল-টাইম স্টক শিল্ড</td>
+          <td>✅ লিকুইড রেন্ডার চেক</td>
+          <td>✅ লিকুইড রেন্ডার চেক</td>
+          <td>✅ লিকুইড রেন্ডার চেক</td>
+          <td>✅ লিকুইড রেন্ডার চেক</td>
+        </tr>
+        <tr>
+          <td class="bold">উইজেট ডিজাইন কাস্টমাইজার</td>
+          <td>ডিফল্ট প্রি-সেট থিম</td>
+          <td>ফুল কালার, ফন্ট ও বাটন</td>
+          <td>ফুল সিএসএস ও লেআউট</td>
+          <td>কাস্টম সিএসএস ও ব্র্যান্ডিং</td>
+        </tr>
+        <tr>
+          <td class="bold">ম্যানুয়াল রুলস এডিটর</td>
+          <td>❌ (শুধু অটো AI)</td>
+          <td>✅ আনলিমিটেড রুলস</td>
+          <td>✅ ম্যানুয়াল + অটো প্রায়োরিটি</td>
+          <td>✅ গ্লোবাল পিন ও এক্সক্লুশন</td>
+        </tr>
+        <tr>
+          <td class="bold">Explainer সোশ্যাল-প্রুফ ব্যাজ</td>
+          <td>❌</td>
+          <td>❌</td>
+          <td>✅ অন্তর্ভুক্ত (pair≥5)</td>
+          <td>✅ কাস্টম ব্যাজ টেক্সট</td>
+        </tr>
+        <tr>
+          <td class="bold">ভার্টিক্যাল কমপ্লিমেন্ট ম্যাপ</td>
+          <td>❌ জেনেরিক ফলব্যাক</td>
+          <td>❌</td>
+          <td>✅ ১২টি ইন্ডাস্ট্রি ম্যাপ</td>
+          <td>✅ কাস্টম ইন্ডাস্ট্রি রুলস</td>
+        </tr>
+        <tr>
+          <td class="bold">আউটবাউন্ড এক্সক্লুশন ফিল্টার</td>
+          <td>❌</td>
+          <td>বেসিক কালেকশন বাদ</td>
+          <td>গিফট কার্ড, ওয়ারেন্টি বাদ</td>
+          <td>মাল্টি-কন্ডিশন রুল ইঞ্জিন</td>
+        </tr>
+        <tr>
+          <td class="bold">অ্যানালিটিক্স ড্যাশবোর্ড</td>
+          <td>বেসিক ডলার সামারি</td>
+          <td>বিস্তারিত সেলস গ্রাফ</td>
+          <td>৫-স্টেজ কনভার্সন ফানেল</td>
+          <td>এন্টারপ্রাইজ ফানেল ও এক্সপোর্ট</td>
+        </tr>
+        <tr>
+          <td class="bold">সাপোর্ট লেভেল</td>
+          <td>কমিউনিটি ও গাইড</td>
+          <td>ইমেইল (২৪-৪৮ ঘণ্টা)</td>
+          <td>প্রায়োরিটি চ্যাট ও ইমেইল</td>
+          <td>ডেডিকেটেড ভিআইপি সাপোর্ট</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout green" style="margin-top: 10px;">
+      <strong>🏆 বোর্ড মিটিং পয়েন্ট:</strong> মার্চেন্টরা যাতে কখনই আনইনস্টল না করে সেজন্য আমাদের পলিসি হলো: <strong>ক্যাপ পার হলেও উইজেট বন্ধ হবে না</strong>। মার্চেন্টকে নোটিফিকেশন দেওয়া হবে এবং ৭ দিনের গ্রেস পিরিয়ড দিয়ে সহজে পরবর্তী প্ল্যানে আপগ্রেড করার সুযোগ দেওয়া হবে।
+    </div>
+
+    <!-- Free to Paid Upgrade Strategy -->
+    <div style="margin-top: 10px;">
+      <div style="font-size: 8.5pt; font-weight: 800; color: #0f172a; margin-bottom: 5px; display: flex; align-items: center; gap: 6px;">
+        <span>🎯</span> মার্চেন্ট আপগ্রেড ফানেল ও গ্রেস পলিসি স্ট্র্যাটেজি (Why Merchants Upgrade):
+      </div>
+      <div class="tri-grid">
+        <div class="tri-card green">
+          <h4>📈 ন্যাচারাল সেলস ট্রানজিশন</h4>
+          <p>মার্চেন্ট যখন দেখবে ফ্রি প্ল্যানেই $৫০০ সেলস এসেছে, তখন পরবর্তী $২,০০০ সেলস পেতে মাত্র $১৯ খরচ করতে তাদের কোনো দ্বিধা থাকবে না।</p>
+        </div>
+        <div class="tri-card amber">
+          <h4>🤝 নো-শাটডাউন রিটেনশন শিল্ড</h4>
+          <p>ক্যাপ পার হলেও উইজেট বন্ধ হবে না; ৭ দিনের গ্রেস পিরিয়ডে সফট নোটিফিকেশন দিয়ে আপগ্রেড করানো হবে—মার্চেন্ট রাগ করে আনইনস্টল করবে না।</p>
+        </div>
+        <div class="tri-card blue">
+          <h4>⚡ ১-ক্লিক শপিফাই বিলিং API</h4>
+          <p>শপিফাই অ্যাপ বিলিং API v2 ব্যবহার করায় কোনো কার্ড গেটওয়ে লাগবে না; সরাসরি মার্চেন্টের শপিফাই ইনভয়েসের সাথে যুক্ত হবে।</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>Shopify AI Recommendations • Executive Technical Proposal</span>
+      <span>Confidential • Page 6</span>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       PAGE 7: ROADMAP, MVP SCOPE & CTO SIGN-OFF (আলাদা পেজে রোডম্যাপ ও সাইন-অফ)
+       =================================================================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="brand-logo">
+        <div class="logo-icon">🚀</div>
+        <div class="logo-text">Roadmap & Governance</div>
+      </div>
+      <div class="header-badge">Phased Execution Plan</div>
+    </div>
+
+    <h2 class="section-title"><span class="section-number">৮</span> রোডম্যাপ ও এমভিপি স্কোপ (MVP Release Plan)</h2>
+
+    <p>
+      প্রজেক্টের দ্রুত বাস্তবায়ন এবং যেকোনো ঝুঁকি এড়াতে পুরো আর্কিটেকচারকে ২টি পরিষ্কার ধাপে ভাগ করা হয়েছে:
+    </p>
+
+    <div class="jossh-grid">
+      <div class="jossh-card green">
+        <h3 style="color: #047857;">🎯 Day-1 MVP স্কোপ (Phase 1–7)</h3>
+        <p>
+          • <strong>PDP FBT বান্ডেল ব্লক:</strong> লিকুইড + ভ্যানিলা কাস্টম এলিমেন্ট (< ৫KB)।<br>
+          • <strong>৪-টিয়ার ওয়াটারফল ও ৬০-দিন মাইন:</strong> অটোমেটিক কোল্ড-স্টার্ট সলিউশন।<br>
+          • <strong>শপিফাই ডিসকাউন্ট ফাংশন:</strong> নেটিভ চেকআউট বান্ডেল ছাড়।<br>
+          • <strong>মিনিমাল এমবেডেড অ্যাডমিন:</strong> ১-মিনিট অনবোর্ডিং ও সেলস রিপোর্ট।<br>
+          • <strong>শপিফাই বিলিং:</strong> $০ / $১৯ / $৪৯ / $৯৯ ফেয়ার ক্যাপড প্ল্যান।
+        </p>
+      </div>
+
+      <div class="jossh-card">
+        <h3 style="color: #4338ca;">📈 পোস্ট-এমভিপি রোডম্যাপ (Phase 8–12)</h3>
+        <p>
+          • <strong>Phase 8:</strong> স্মার্ট স্লাইড কার্ট ড্রয়ার ও প্রগ্রেস বার।<br>
+          • <strong>Phase 9:</strong> হোমপেজ ও কালেকশন ওমনিচ্যানেল ক্যারোসেল।<br>
+          • <strong>Phase 10:</strong> ১২০-সেকেন্ড পোস্ট-পারচেজ আপসেল ও চেকআউট বাম্প।<br>
+          • <strong>Phase 11:</strong> পোলারিস ফুল অ্যানালিটিক্স ফানেল ড্যাশবোর্ড।<br>
+          • <strong>Phase 12:</strong> "Built for Shopify" 💎 অফিশিয়াল সার্টিফিকেশন।
+        </p>
+      </div>
+    </div>
+
+    <!-- 9-Week Engineering Sprint Schedule -->
+    <div style="margin-top: 10px;">
+      <div style="font-size: 8.5pt; font-weight: 800; color: #0f172a; margin-bottom: 5px; display: flex; align-items: center; gap: 6px;">
+        <span>⏱️</span> ৯-সপ্তাহের ইঞ্জিনিয়ারিং ডেলিভারি স্প্রিন্ট শিডিউল (9-Week Delivery Schedule):
+      </div>
+      <div class="sprint-grid">
+        <div class="sprint-card">
+          <div class="sprint-tag">Sprint 1 (W1–3)</div>
+          <div class="sprint-name">স্টোরফ্রন্ট ও লিকুইড</div>
+          <div class="sprint-desc">PDP FBT ব্লক (&lt;৫KB), ভ্যানিলা কাস্টম এলিমেন্ট ও নেটিভ শপিফাই ডিসকাউন্ট ফাংশন (Rust/WASM)।</div>
+        </div>
+        <div class="sprint-card">
+          <div class="sprint-tag">Sprint 2 (W4–6)</div>
+          <div class="sprint-name">ক্লাউডফ্লেয়ার এজ ও D1</div>
+          <div class="sprint-desc">Edge Workers, D1 স্কিমা, ওয়েবহুক ইনজেশন কিউ এবং ৬০-দিনের হিস্ট্রি মাইনিং অ্যালগরিদম।</div>
+        </div>
+        <div class="sprint-card">
+          <div class="sprint-tag">Sprint 3 (W7–8)</div>
+          <div class="sprint-name">এমবেডেড অ্যাডমিন ও বিলিং</div>
+          <div class="sprint-desc">পোলারিস ড্যাশবোর্ড, শপিফাই বিলিং API v2 ও রিয়েল-টাইম অ্যাট্রিবিউটেড সেলস ফানেল।</div>
+        </div>
+        <div class="sprint-card">
+          <div class="sprint-tag">Sprint 4 (W9)</div>
+          <div class="sprint-name">টেস্টিং ও অ্যাপ সাবমিশন</div>
+          <div class="sprint-desc">এন্ড-টু-এন্ড টেস্ট, সিকিউরিটি অডিট এবং শপিফাই অ্যাপ স্টোরে অফিশিয়াল রিভিউ সাবমিশন।</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title" style="margin-top: 14px;"><span class="section-number">৯</span> সিটিও ও বোর্ড ডিসিশন সাইন-অফ (Sign-Off Request)</h2>
+    <p>আমরা টেকনিক্যাল বোর্ড এবং সিটিও-এর কাছে নিচের ৩টি বিষয়ে আনুষ্ঠানিক অনুমোদন ও দিকনির্দেশনা প্রার্থনা করছি:</p>
+
+    <div class="callout green" style="margin: 10px 0;">
+      <ol style="margin: 0 0 0 16px; padding: 0; font-size: 8.5pt;">
+        <li><strong>ক্লাউডফ্লেয়ার এজ আর্কিটেকচার অনুমোদন:</strong> Workers + D1 + মেটাফিল্ড প্রি-কম্পিউট ফ্রেমওয়ার্ক।</li>
+        <li><strong>MVP ফেজ ১–৭ স্কোপ অনুমোদন:</strong> দ্রুততম সময়ে কোর FBT ও ডিসকাউন্ট ফাংশন নিয়ে মার্কেটে নামা।</li>
+        <li><strong>ফেয়ার-ক্যাপড প্রাইসিং অনুমোদন:</strong> $০ / $১৯ / $৪৯ / $৯৯ মডেল চূড়ান্ত করা।</li>
+      </ol>
+    </div>
+
+    <!-- Sign-off Cards -->
+    <div class="signoff-row">
+      <div class="signoff-card">
+        <div class="role">Team Lead & Strategy</div>
+        <div class="name">এনামুল ভাই</div>
+        <div class="status status-ok">✅ Approved Vision</div>
+      </div>
+      <div class="signoff-card">
+        <div class="role">Lead Engineer & PM</div>
+        <div class="name">নুরুজ্জামান রুবেল</div>
+        <div class="status status-ok">✅ Architecture Ready</div>
+      </div>
+      <div class="signoff-card">
+        <div class="role">Chief Technology Officer</div>
+        <div class="name">CTO / Advisory</div>
+        <div class="status status-wait">⏳ Review & Approval</div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>Shopify AI Recommendations • Executive Technical Proposal</span>
+      <span>Confidential • Page 7</span>
+    </div>
+  </div>
+
+</body>
+</html>
