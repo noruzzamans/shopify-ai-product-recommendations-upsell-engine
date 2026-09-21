@@ -743,9 +743,9 @@
       </div>
 
       <div class="jossh-card amber">
-        <h3>🛡️ ২. জিরো-স্টক লিকুইড রিয়েল-টাইম শিল্ড</h3>
+        <h3>🛡️ ২. স্মার্ট স্টক সোয়াপ (ইনভেন্টরি সেভার)</h3>
         <p>
-          <strong>LimeSpot-এর বড় ত্রুটি দূরীকরণ:</strong> LimeSpot-এর লাইভ প্রিভিউতে স্টক শেষ হওয়া পণ্য শো করার বাগ পাওয়া গেছে। আমাদের অ্যাপ লিকুইড রেন্ডার টাইমে ০ms-এ স্টক চেক করে—স্টক শেষ হলে স্বয়ংক্রিয়ভাবে উইজেট থেকে হাইড হয়ে যাবে।
+          <strong>LimeSpot-এর বড় ত্রুটি দূরীকরণ:</strong> LimeSpot স্টক শেষ হওয়া পণ্য শো করে সেলস নষ্ট করে। আমাদের অ্যাপ শুধু স্টক ০ হলে হাইড করে স্লট খালি রাখে না; বরং ০ms-এ স্বয়ংক্রিয়ভাবে ইন-স্টক থাকা বিকল্প পণ্য সোয়াপ (Swap) করে উইজেট পূর্ণ রাখে, ফলে কার্ট ড্রপ হয় না!
         </p>
       </div>
 
@@ -771,9 +771,9 @@
       </div>
 
       <div class="jossh-card rose">
-        <h3>🌐 ৬. শপিফাই মার্কেটস ও অটো-কারেন্সি</h3>
+        <h3>🌐 ৬. মাল্টি-কারেন্সি ও মাল্টি-ল্যাঙ্গুয়েজ লোকালাইজেশন</h3>
         <p>
-          <strong>গ্লোবাল স্টোর রেডি:</strong> কোনো বাড়তি কনফিগারেশন ছাড়াই শপিফাই মার্কেটস ও মাল্টি-কারেন্সি সাপোর্ট করবে। যেকোনো দেশের ভিজিটরের জন্য স্থানীয় কারেন্সিতে সঠিক রাউন্ডিং রুলস সহ রিকমেন্ডেশনের দাম দেখাবে।
+          <strong>গ্লোবাল স্টোর রেডি:</strong> ক্রস-বর্ডার শপিফাই মার্চেন্টদের জন্য শপিফাই মার্কেটস ও জিও-ডিটেকশন দিয়ে তাৎক্ষণিক কারেন্সি রূপান্তর এবং শপিফাই Locales দিয়ে Explainer ব্যাজ ক্রেতার স্থানীয় ভাষায় স্বয়ংক্রিয় অনুবাদ হয়।
         </p>
       </div>
     </div>
@@ -824,7 +824,7 @@
       <div class="header-badge">Cloudflare Edge + D1 + Metafields</div>
     </div>
 
-    <h2 class="section-title"><span class="section-number">৪</span> হাই-পারফরম্যান্স এজ সিস্টেম আর্কিটেকচার</h2>
+    <h2 class="section-title"><span class="section-number">৪</span> হাই-পারফরম্যান্স এজ ও রিপোজিটরি আর্কিটেকচার (GitHub Integration)</h2>
 
     <p>
       মার্চেন্টের পেজ স্পিড যেন বিন্দুমাত্র না কমে এবং আমাদের সার্ভার খরচ যেন শূন্যের কাছাকাছি থাকে, সেজন্য ৩টি পরিষ্কার স্তরে আর্কিটেকচার গঠিত:
@@ -833,7 +833,7 @@
     <!-- 3 Clean Layers -->
     <div class="layer-card blue">
       <div>
-        <div class="layer-title">১. স্টোরফ্রন্ট লেয়ার (Theme App Extension)</div>
+        <div class="layer-title">১. স্টোরফ্রন্ট লেয়ার (Theme App Extension & Liquid SDK)</div>
         <div class="layer-desc"><code>&lt;clearrecs-fbt&gt;</code> ভ্যানিলা কাস্টম এলিমেন্ট (< ৫KB)। প্রোডাক্ট মেটাফিল্ড থেকে ০ms-এ লিকুইড সরাসরি রেন্ডার করে।</div>
       </div>
       <span class="pill pill-blue">০ms Network RTT</span>
@@ -841,7 +841,7 @@
 
     <div class="layer-card orange">
       <div>
-        <div class="layer-title">২. এজ কম্পিউটিং ও কিউ (Cloudflare Workers & Queues)</div>
+        <div class="layer-title">২. ব্যাকএন্ড ফ্রেমওয়ার্ক ও কিউ (Next.js / Workers & Redis Queue)</div>
         <div class="layer-desc">অর্ডার ওয়েব হুক পেয়ে ৫০০ms-এর মধ্যে Fast-ACK পাঠায় এবং কিউতে নিরাপদে জমা রেখে পেয়ার ম্যাট্রিক্স আপডেট করে।</div>
       </div>
       <span class="pill pill-amber">Fast-ACK &lt; ৫০০ms</span>
@@ -849,10 +849,10 @@
 
     <div class="layer-card green">
       <div>
-        <div class="layer-title">৩. এজ ডেটাবেস ও ডিসকাউন্ট (Cloudflare D1 & Shopify Function)</div>
-        <div class="layer-desc">সার্ভারলেস SQLite ডেটাবেসে কো-পারচেজ ম্যাট্রিক্স সংরক্ষণ এবং শপিফাই নেটিভ ফাংশন দিয়ে চেকআউট ডিসকাউন্ট প্রসেস।</div>
+        <div class="layer-title">৩. ডেটাবেস ও ভেক্টর স্টোরেজ (PostgreSQL + pgvector / D1 & Discount Function)</div>
+        <div class="layer-desc">কো-পারচেজ ম্যাট্রিক্স, pgvector সেমান্টিক এমবেডিংস সংরক্ষণ এবং শপিফাই নেটিভ ফাংশন দিয়ে চেকআউট ডিসকাউন্ট প্রসেস।</div>
       </div>
-      <span class="pill pill-green">Edge SQL • 0 Pools</span>
+      <span class="pill pill-green">Edge SQL • pgvector</span>
     </div>
 
     <h2 class="section-title" style="margin-top: 18px;"><span class="section-number">৫</span> ৪-টিয়ার জিরো-এম্পটি-স্টেট ওয়াটারফল চেইন</h2>
@@ -882,8 +882,8 @@
         </tr>
         <tr>
           <td class="bold">Tier 3 (কোল্ড-স্টার্ট)</td>
-          <td>কমপ্লিমেন্ট ম্যাপ</td>
-          <td>ট্যাক্সোনমি ক্রস-ম্যাচিং (যেমন: জুতার সাথে মোজা; <strong>কখনোই সেম কেস নয়</strong>)।</td>
+          <td>কমপ্লিমেন্ট ম্যাপ ও pgvector</td>
+          <td>ট্যাক্সোনমি ক্রস-ম্যাচিং ও <strong>pgvector সেমান্টিক এমবেডিংস</strong> (স্টাইল ও টেক্সট কমপ্যাটিবিলিটি)।</td>
           <td>নতুন প্রোডাক্ট বা যেখানে অর্ডারের ইতিহাস নেই।</td>
         </tr>
         <tr>
@@ -1234,9 +1234,9 @@
         <h3 style="color: #047857;">🎯 Day-1 MVP স্কোপ (Phase 1–7)</h3>
         <p>
           • <strong>PDP FBT বান্ডেল ব্লক:</strong> লিকুইড + ভ্যানিলা কাস্টম এলিমেন্ট (< ৫KB)।<br>
-          • <strong>৪-টিয়ার ওয়াটারফল ও ৬০-দিন মাইন:</strong> অটোমেটিক কোল্ড-স্টার্ট সলিউশন।<br>
+          • <strong>স্মার্ট স্টক সোয়াপ:</strong> OOS প্রোডাক্ট ইন-স্টক অল্টারনেটিভে অটো-সোয়াপ।<br>
+          • <strong>৪-টিয়ার ওয়াটারফল ও pgvector:</strong> ৬০-দিন মাইন + কোল্ড-স্টার্ট এআই।<br>
           • <strong>শপিফাই ডিসকাউন্ট ফাংশন:</strong> নেটিভ চেকআউট বান্ডেল ছাড়।<br>
-          • <strong>মিনিমাল এমবেডেড অ্যাডমিন:</strong> ১-মিনিট অনবোর্ডিং ও সেলস রিপোর্ট।<br>
           • <strong>শপিফাই বিলিং:</strong> $০ / $১৯ / $৪৯ / $৯৯ ফেয়ার ক্যাপড প্ল্যান।
         </p>
       </div>
@@ -1245,9 +1245,9 @@
         <h3 style="color: #4338ca;">📈 পোস্ট-এমভিপি রোডম্যাপ (Phase 8–12)</h3>
         <p>
           • <strong>Phase 8:</strong> স্মার্ট স্লাইড কার্ট ড্রয়ার ও প্রগ্রেস বার।<br>
-          • <strong>Phase 9:</strong> হোমপেজ ও কালেকশন ওমনিচ্যানেল ক্যারোসেল।<br>
-          • <strong>Phase 10:</strong> ১২০-সেকেন্ড পোস্ট-পারচেজ আপসেল ও চেকআউট বাম্প।<br>
-          • <strong>Phase 11:</strong> পোলারিস ফুল অ্যানালিটিক্স ফানেল ড্যাশবোর্ড।<br>
+          • <strong>Phase 9:</strong> ক্যারোসেল ও ২-মিনিট এআই ক্যাটালগ স্ক্যানার।<br>
+          • <strong>Phase 10:</strong> পোস্ট-পারচেজ আপসেল, লোকালাইজেশন ও এআই চ্যাট।<br>
+          • <strong>Phase 11:</strong> পোলারিস ফানেল ও স্ট্র্যাটেজি A/B টেস্টিং।<br>
           • <strong>Phase 12:</strong> "Built for Shopify" 💎 অফিশিয়াল সার্টিফিকেশন।
         </p>
       </div>

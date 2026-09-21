@@ -19,6 +19,10 @@
 | D13 | App Store submit = **BFS-ready**. BFS badge = **post-launch** (install/review thresholds). Lighthouse: app must not drop storefront score **>10 points** — not “100/100” | Frozen | 21 Sep 2026 | Phase 12 = BFS on launch day |
 | D14 | Explainer badge is a **hypothesis** (CTR not measured). Category demand is CBB/Wiser ratings, not this USP | Frozen | 21 Sep 2026 | “73% CTR lift” as a finding |
 | D15 | Listing copy: association-rule engine. “AI” like CBB uses the word. No fabricated stats | Frozen | 21 Sep 2026 | LLM social-proof sentences |
+| D16 | **Smart Stock Swap:** If a rec product is OOS at render time (`tracked + DENY + available <= 0`), swap in next in-stock candidate from Tier 3/4 to keep bundle intact | Frozen | 21 Sep 2026 | Leave blank slot or collapse 3-item bundle |
+| D17 | **2-Min Catalog Scanner:** Background async LLM worker auto-classifies store vertical (Fashion, Beauty, Home, Electronics, Food) and initializes complement rules | Frozen | 21 Sep 2026 | Force merchant manual rule setup on Day 1 |
+| D18 | **Cold-Start pgvector:** Products with 0 order history use PostgreSQL `pgvector` text embeddings for style/semantic matching before co-purchase data builds | Frozen | 21 Sep 2026 | Show completely unrelated generic bestsellers |
+| D19 | **Localization & Markets:** Multi-currency formatting via Shopify Markets; Explainer badge translations via Shopify Locales | Frozen | 21 Sep 2026 | English-only single currency storefront |
 
 **Repo:** GitHub remote is **public** (`noruzzamans/shopify-ai-product-recommendations-upsell-engine`). Make private before a real product bet — not done in this pass.
 
